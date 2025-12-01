@@ -13,27 +13,10 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [activeTab, setActiveTab] = useState('student'); // 'student' or 'admin'
   
-  const { login, loginWithGoogle } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
-
-  // Form validation
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   // Handle input change
   const handleChange = (e) => {
@@ -48,29 +31,70 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    // Set the role based on active tab
+    const role = activeTab === 'student' ? 'student' : 'teacher';
+    
+    // Update form data with correct role
+    const submitData = {
+      ...formData,
+      role: role
+    };
+    
+    // Validate form with updated data
+    const newErrors = {};
+    
+    if (!submitData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(submitData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    if (!submitData.password) {
+      newErrors.password = 'Password is required';
+    } else if (submitData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    
+    setErrors(newErrors);
+    
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
     
     try {
       setLoading(true);
       setMessage('');
-      await login(formData.email, formData.password);
-      // Navigation will be handled by App.js based on user role
-      navigate('/');
+      
+      const result = await login(submitData.email, submitData.password);
+      console.log('Login successful, result:', result);
+      
+      // Add a small delay to ensure state is properly set
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Redirect based on role
+      if (result.user.role === 'teacher') {
+        navigate('/teacher/dashboard');
+      } else {
+        navigate('/student/quizzes');
+      }
     } catch (error) {
-      setMessage(error.message || 'Failed to login');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle Google Sign-In
-  const handleGoogleSignIn = async () => {
-    try {
-      setLoading(true);
-      await loginWithGoogle(formData.role);
-      navigate('/');
-    } catch (error) {
-      setMessage(error.message || 'Failed to sign in with Google');
+      console.error('Login error:', error);
+      let errorMessage = 'Failed to login';
+      
+      // Handle specific errors
+      if (error.message) {
+        errorMessage = error.message;
+        // Provide more user-friendly error messages
+        if (errorMessage.includes('Failed to connect')) {
+          errorMessage = 'Cannot connect to the server. Please make sure the backend is running.';
+        } else if (errorMessage.includes('Database connection failed')) {
+          errorMessage = 'Database connection failed. Please check the MongoDB Atlas configuration.';
+        } else if (errorMessage.includes('Invalid email or password')) {
+          errorMessage = 'Invalid email or password. Please try again.';
+        }
+      }
+      
+      setMessage(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -88,71 +112,131 @@ const Login = () => {
         <p className="auth-subtitle">Login to continue your quiz journey</p>
         
         {message && (
+          <div className={`auth-message ${message.includes('Failed') || message.includes('Cannot connect') || message.includes('Database connection') ? 'error' : ''}`}>
+            {message}
+          </div>
+        )}
+        
+        {/* Tab Navigation */}
+        <div className="tab-navigation">
+          <button 
+            className={`tab-btn ${activeTab === 'student' ? 'active' : ''}`}
+            onClick={() => setActiveTab('student')}
+          >
+            Student Login
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'admin' ? 'active' : ''}`}
+            onClick={() => setActiveTab('admin')}
+          >
+            Teacher Login
+          </button>
+        </div>
+        
+        {/* Student Login Section */}
+        {activeTab === 'student' && (
           <motion.div 
-            className="message error"
+            className="login-section"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
           >
-            {message}
+            <div className="section-description">
+              <p>Login as a student to take quizzes and track your progress</p>
+            </div>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={errors.email ? 'input-error' : ''}
+                  placeholder="Enter your student email"
+                />
+                {errors.email && <span className="error-message">{errors.email}</span>}
+              </div>
+              
+              <div className="input-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={errors.password ? 'input-error' : ''}
+                  placeholder="Enter your password"
+                />
+                {errors.password && <span className="error-message">{errors.password}</span>}
+              </div>
+              
+              <input type="hidden" name="role" value="student" />
+
+              <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login as Student'}
+              </button>
+            </form>
           </motion.div>
         )}
+        
+        {/* Admin Login Section */}
+        {activeTab === 'admin' && (
+          <motion.div 
+            className="login-section"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="section-description">
+              <p>Login as an admin/teacher to create and manage quizzes</p>
+            </div>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={errors.email ? 'input-error' : ''}
+                  placeholder="Enter your admin email"
+                />
+                {errors.email && <span className="error-message">{errors.email}</span>}
+              </div>
+              
+              <div className="input-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={errors.password ? 'input-error' : ''}
+                  placeholder="Enter your password"
+                />
+                {errors.password && <span className="error-message">{errors.password}</span>}
+              </div>
+              
+              <input type="hidden" name="role" value="teacher" />
 
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={errors.email ? 'input-error' : ''}
-              placeholder="Enter your email"
-            />
-            {errors.email && <span className="error-message">{errors.email}</span>}
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={errors.password ? 'input-error' : ''}
-              placeholder="Enter your password"
-            />
-            {errors.password && <span className="error-message">{errors.password}</span>}
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="role">Login as...</label>
-            <select
-              id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-            >
-              <option value="student">Student</option>
-              <option value="teacher">Teacher</option>
-            </select>
-          </div>
-
-          <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-
+              <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login as Teacher'}
+              </button>
+            </form>
+          </motion.div>
+        )}
+        
         <div className="divider">
           <span>OR</span>
         </div>
-
-        <button onClick={handleGoogleSignIn} className="btn btn-google btn-full" disabled={loading}>
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
-          Continue with Google
-        </button>
-
+        
         <p className="auth-footer">
           Don't have an account? <Link to="/register">Register here</Link>
         </p>

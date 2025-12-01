@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
+import apiService from '../../services/api';
 import './StudentProfile.css';
 
 const StudentProfile = () => {
@@ -24,42 +23,34 @@ const StudentProfile = () => {
 
   const fetchProfileData = async () => {
     try {
-      // Fetch user data
-      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-      if (userDoc.exists()) {
-        setUserData(userDoc.data());
-      }
+      // Fetch user data and results in parallel
+      const [userDataResponse, resultsResponse] = await Promise.all([
+        apiService.getCurrentUser(),
+        apiService.getMyResults()
+      ]);
 
-      // Fetch quiz results
-      const q = query(collection(db, 'results'), where('studentId', '==', currentUser.uid));
-      const querySnapshot = await getDocs(q);
-      
-      const resultsData = [];
+      setUserData(userDataResponse.user);
+
+      // Process results data
+      const resultsData = resultsResponse.results || [];
       let totalScore = 0;
       let perfectCount = 0;
 
-      for (const doc of querySnapshot.docs) {
-        const result = { id: doc.id, ...doc.data() };
-        
-        // Fetch quiz title
-        const quizDoc = await getDoc(doc.ref.parent.parent.collection('quizzes').doc(result.quizId));
-        if (quizDoc.exists()) {
-          result.quizTitle = quizDoc.data().title;
-        }
-        
-        resultsData.push(result);
+      resultsData.forEach(result => {
         totalScore += result.score;
         if (result.score === 100) perfectCount++;
-      }
+      });
 
+      // Sort results by timestamp (newest first)
       resultsData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
       setResults(resultsData);
 
       setStats({
         totalAttempts: resultsData.length,
         averageScore: resultsData.length > 0 ? Math.round(totalScore / resultsData.length) : 0,
         perfectScores: perfectCount,
-        badges: userDoc.data()?.badges || []
+        badges: userDataResponse.user?.badges || []
       });
     } catch (error) {
       console.error('Error fetching profile data:', error);
@@ -198,60 +189,36 @@ const StudentProfile = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h2>📊 Recent Attempts</h2>
-        
-        {results.length === 0 ? (
-          <div className="empty-state">
-            <p>No quiz attempts yet. Start taking quizzes to see your progress!</p>
-            <Link to="/student/quizzes" className="btn btn-primary mt-2">
-              Browse Quizzes
-            </Link>
-          </div>
-        ) : (
+        <h2>Recent Attempts</h2>
+        {results.length > 0 ? (
           <div className="attempts-list">
-            {results.map((result, index) => (
+            {results.slice(0, 5).map((result) => (
               <motion.div 
-                key={result.id}
+                key={result._id}
                 className="attempt-item"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
+                whileHover={{ x: 5 }}
               >
                 <div className="attempt-info">
-                  <h4>{result.quizTitle || 'Unknown Quiz'}</h4>
-                  <p className="attempt-date">
-                    {new Date(result.timestamp).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                  <h3>{result.quizTitle || 'Untitled Quiz'}</h3>
+                  <p>Score: <strong>{result.score}%</strong></p>
+                  <p className="timestamp">
+                    {new Date(result.timestamp).toLocaleDateString()} at 
+                    {' '}{new Date(result.timestamp).toLocaleTimeString()}
                   </p>
                 </div>
-                <div className="attempt-score">
-                  <div 
-                    className="score-badge"
-                    style={{
-                      background: result.score >= 80 
-                        ? 'linear-gradient(135deg, #10b981, #059669)'
-                        : result.score >= 60
-                        ? 'linear-gradient(135deg, #f59e0b, #d97706)'
-                        : 'linear-gradient(135deg, #ef4444, #dc2626)'
-                    }}
-                  >
-                    {Math.round(result.score)}%
-                  </div>
-                  <span className="score-text">
-                    {result.correctAnswers} / {result.totalQuestions} correct
-                  </span>
+                <div className={`score-badge ${result.score >= 80 ? 'high' : result.score >= 60 ? 'medium' : 'low'}`}>
+                  {result.score}%
                 </div>
-                <Link to={`/student/result/${result.id}`} className="btn btn-secondary btn-sm">
-                  View Details →
-                </Link>
               </motion.div>
             ))}
           </div>
+        ) : (
+          <p className="no-attempts">No quiz attempts yet. Start taking quizzes to see your progress!</p>
+        )}
+        {results.length > 5 && (
+          <Link to="/student/results" className="view-all-link">
+            View All Results ({results.length})
+          </Link>
         )}
       </motion.div>
     </div>

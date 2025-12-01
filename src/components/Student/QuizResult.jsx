@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
+import apiService from '../../services/api';
 import './QuizResult.css';
 
 const QuizResult = () => {
@@ -23,64 +22,28 @@ const QuizResult = () => {
   const fetchResult = async () => {
     try {
       // Fetch result
-      const resultDoc = await getDoc(doc(db, 'results', resultId));
-      if (!resultDoc.exists()) {
+      const resultResponse = await apiService.getResult(resultId);
+      if (!resultResponse) {
         alert('Result not found');
         navigate('/student/quizzes');
         return;
       }
 
-      const resultData = { id: resultDoc.id, ...resultDoc.data() };
+      const resultData = resultResponse.result;
       setResult(resultData);
 
-      // Fetch quiz
-      const quizDoc = await getDoc(doc(db, 'quizzes', resultData.quizId));
-      if (quizDoc.exists()) {
-        setQuiz({ id: quizDoc.id, ...quizDoc.data() });
-      }
-
-      // Check for badge achievements
-      await checkBadges(resultData);
+      // Set quiz data (it's included in the result)
+      setQuiz({
+        quizId: resultData.quizId,
+        title: resultData.quizTitle,
+        questions: [] // We don't need the full questions array for display
+      });
     } catch (error) {
       console.error('Error fetching result:', error);
+      alert('Error fetching result: ' + error.message);
+      navigate('/student/quizzes');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const checkBadges = async (resultData) => {
-    try {
-      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-      if (!userDoc.exists()) return;
-
-      const userData = userDoc.data();
-      const currentBadges = userData.badges || [];
-      let newBadge = null;
-
-      // Fast Solver - completed quiz in less than half the time
-      const timeUsed = resultData.timeUsed || 0;
-      if (timeUsed < (quiz?.timer || 0) * 30 && !currentBadges.includes('Fast Solver')) {
-        newBadge = 'Fast Solver';
-      }
-
-      // Perfect Score
-      if (resultData.score === 100 && !currentBadges.includes('Perfect Score')) {
-        newBadge = 'Perfect Score';
-      }
-
-      // Top Ranker - score above 90%
-      if (resultData.score >= 90 && !currentBadges.includes('Top Ranker')) {
-        newBadge = 'Top Ranker';
-      }
-
-      if (newBadge) {
-        await updateDoc(doc(db, 'users', currentUser.uid), {
-          badges: arrayUnion(newBadge)
-        });
-        setEarnedBadge(newBadge);
-      }
-    } catch (error) {
-      console.error('Error checking badges:', error);
     }
   };
 
@@ -158,116 +121,82 @@ const QuizResult = () => {
             </div>
           </div>
 
-          {result.autoSubmitted && (
+          {result.completionReason && result.completionReason !== 'Quiz submitted' && (
             <div className="warning-box">
-              <p>⚠️ Quiz was auto-submitted: {result.autoSubmitReason}</p>
-              <p>Tab switches detected: {result.tabSwitchCount}</p>
+              <p>⚠️ Quiz was auto-submitted: {result.completionReason}</p>
+              <p>Tab switches detected: {result.tabSwitches}</p>
             </div>
           )}
 
-          {earnedBadge && (
-            <motion.div 
-              className="badge-earned"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.7, type: 'spring' }}
-            >
-              🏆 New Badge Earned: {earnedBadge}!
-            </motion.div>
-          )}
+          <div className="result-actions">
+            <Link to="/student/quizzes" className="btn btn-primary">
+              📚 Browse More Quizzes
+            </Link>
+            <Link to="/student/profile" className="btn btn-secondary">
+              👤 View Profile
+            </Link>
+          </div>
         </motion.div>
 
-        {/* Answer Review */}
+        {/* Performance Summary */}
         <motion.div 
-          className="answers-review glass-card"
+          className="performance-summary glass-card"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <h2>📊 Performance Summary</h2>
+          
+          <div className="summary-stats">
+            <div className="stat-card">
+              <div className="stat-icon">⏱️</div>
+              <div className="stat-info">
+                <div className="stat-value">{Math.round(result.timeTaken / 60)} min</div>
+                <div className="stat-label">Time Taken</div>
+              </div>
+            </div>
+            
+            <div className="stat-card">
+              <div className="stat-icon">🔄</div>
+              <div className="stat-info">
+                <div className="stat-value">{result.tabSwitches}</div>
+                <div className="stat-label">Tab Switches</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Question Review */}
+        <motion.div 
+          className="question-review glass-card"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <h2>Answer Review</h2>
-          <p className="quiz-title">{quiz.title}</p>
-
-          <div className="answers-list">
-            {quiz.questions.map((question, index) => {
-              const userAnswer = result.answers[index];
-              const isCorrect = userAnswer === question.correctAnswer;
-
+          <h2>📝 Question Review</h2>
+          <p className="review-note">Review your answers and learn from explanations</p>
+          
+          <div className="review-questions">
+            {result.userAnswers.map((userAnswer, index) => {
+              // Since we don't have the full quiz data, we'll show a simplified review
               return (
-                <motion.div 
-                  key={index}
-                  className="answer-item"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                >
+                <div key={index} className="review-question">
                   <div className="question-header">
-                    <h4>
-                      {index + 1}. {question.questionText}
-                    </h4>
-                    {isCorrect ? (
-                      <span className="result-badge correct">✓ Correct</span>
-                    ) : (
-                      <span className="result-badge wrong">✗ Wrong</span>
-                    )}
+                    <h3>Question {index + 1}</h3>
+                    <span className={`status-badge ${userAnswer !== null ? 'answered' : 'skipped'}`}>
+                      {userAnswer !== null ? 'Answered' : 'Skipped'}
+                    </span>
                   </div>
-
-                  {question.imageUrl && (
-                    <img src={question.imageUrl} alt="Question" className="question-img" />
-                  )}
-
-                  <div className="options-review">
-                    {question.options.map((option, optIndex) => {
-                      let className = 'option-review';
-                      
-                      if (optIndex === question.correctAnswer) {
-                        className += ' correct-answer';
-                      }
-                      
-                      if (optIndex === userAnswer && !isCorrect) {
-                        className += ' wrong-answer';
-                      }
-
-                      return (
-                        <div key={optIndex} className={className}>
-                          <span className="option-label">
-                            {String.fromCharCode(65 + optIndex)}
-                          </span>
-                          <span className="option-text">{option}</span>
-                          {optIndex === question.correctAnswer && (
-                            <span className="indicator">✓</span>
-                          )}
-                          {optIndex === userAnswer && !isCorrect && (
-                            <span className="indicator wrong-indicator">✗</span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {question.explanation && (
-                    <div className="explanation">
-                      <strong>💡 Explanation:</strong> {question.explanation}
+                  
+                  {userAnswer !== null && (
+                    <div className="answer-review">
+                      <p><strong>Your Answer:</strong> Option {String.fromCharCode(65 + userAnswer)}</p>
                     </div>
                   )}
-                </motion.div>
+                </div>
               );
             })}
           </div>
-        </motion.div>
-
-        {/* Actions */}
-        <motion.div 
-          className="result-actions"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Link to="/student/quizzes" className="btn btn-primary">
-            📚 Back to Quizzes
-          </Link>
-          <Link to="/student/profile" className="btn btn-secondary">
-            👤 View Profile
-          </Link>
         </motion.div>
       </motion.div>
     </div>

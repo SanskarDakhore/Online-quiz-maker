@@ -10,20 +10,64 @@ import TeacherQuizzes from './components/Teacher/TeacherQuizzes';
 import StudentQuizzes from './components/Student/StudentQuizzes';
 import QuizPlayer from './components/Student/QuizPlayer';
 import QuizResult from './components/Student/QuizResult';
+import ResultPending from './components/Student/ResultPending';
+import Certificate from './components/Student/Certificate';
 import StudentProfile from './components/Student/StudentProfile';
-import EasterEggs from './components/EasterEggs';
 import './index.css';
 
 // Home redirect component
 const Home = () => {
-  const { userRole } = useAuth();
+  const { userRole, currentUser, loading } = useAuth();
   
+  // Debug logging
+  console.log('Home component - currentUser:', currentUser);
+  console.log('Home component - userRole:', userRole);
+  console.log('Home component - loading:', loading);
+  
+  // Additional debug info
+  console.log('Home component - localStorage token:', localStorage.getItem('token'));
+  console.log('Home component - localStorage current_user:', localStorage.getItem('current_user'));
+  
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="flex-center" style={{ minHeight: '100vh' }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+  
+  // If no user, redirect to login
+  if (!currentUser) {
+    console.log('Home: No user, redirecting to /login');
+    return <Navigate to="/login" />;
+  }
+  
+  // If user exists but role not loaded yet, show loading
+  // Give it a bit more time to load the role
+  if (currentUser && userRole === null) {
+    return (
+      <div className="flex-center" style={{ minHeight: '100vh', flexDirection: 'column' }}>
+        <div className="spinner"></div>
+        <p style={{ marginTop: '1rem' }}>Loading your profile...</p>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.9em', color: '#666' }}>
+          Please wait while we verify your account
+        </p>
+      </div>
+    );
+  }
+  
+  // Redirect based on user role
   if (userRole === 'teacher') {
+    console.log('Home: Redirecting teacher to /teacher/dashboard');
     return <Navigate to="/teacher/dashboard" />;
   } else if (userRole === 'student') {
+    console.log('Home: Redirecting student to /student/quizzes');
     return <Navigate to="/student/quizzes" />;
   }
   
+  // Default redirect to login
+  console.log('Home: Default redirect to /login');
   return <Navigate to="/login" />;
 };
 
@@ -32,7 +76,6 @@ function App() {
     <Router>
       <AuthProvider>
         <div className="app">
-          <EasterEggs />
           <Routes>
             {/* Public Routes */}
             <Route path="/register" element={<Register />} />
@@ -95,6 +138,24 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="student">
                   <QuizResult />
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/student/result-pending/:resultId" 
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <ResultPending />
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/student/certificate/:resultId" 
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <Certificate />
                 </ProtectedRoute>
               } 
             />

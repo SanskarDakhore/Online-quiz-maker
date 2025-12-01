@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import apiService from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import './StudentQuizzes.css';
 
 const StudentQuizzes = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, userRole } = useAuth();
   const [quizzes, setQuizzes] = useState([]);
   const [filteredQuizzes, setFilteredQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterDifficulty, setFilterDifficulty] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Debug logging
+  console.log('StudentQuizzes component - currentUser:', currentUser);
+  console.log('StudentQuizzes component - userRole:', userRole);
 
   useEffect(() => {
     fetchQuizzes();
@@ -25,14 +28,10 @@ const StudentQuizzes = () => {
 
   const fetchQuizzes = async () => {
     try {
-      const q = query(collection(db, 'quizzes'), where('published', '==', true));
-      const querySnapshot = await getDocs(q);
+      console.log('Fetching published quizzes...');
+      const quizzesData = await apiService.getQuizzes();
       
-      const quizzesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
+      console.log('Found quizzes:', quizzesData.length);
       setQuizzes(quizzesData);
       setFilteredQuizzes(quizzesData);
     } catch (error) {
@@ -56,7 +55,7 @@ const StudentQuizzes = () => {
     if (searchTerm) {
       filtered = filtered.filter(q => 
         q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        (q.description && q.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -131,7 +130,7 @@ const StudentQuizzes = () => {
           ) : (
             filteredQuizzes.map((quiz, index) => (
               <motion.div
-                key={quiz.id}
+                key={quiz.quizId}
                 className="quiz-card glass-card"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -156,7 +155,7 @@ const StudentQuizzes = () => {
                   <span>⏱️ {quiz.timer} min</span>
                 </div>
 
-                <Link to={`/student/quiz/${quiz.id}`} className="btn btn-primary btn-full">
+                <Link to={`/student/quiz/${quiz.quizId}`} className="btn btn-primary btn-full">
                   Start Quiz →
                 </Link>
               </motion.div>

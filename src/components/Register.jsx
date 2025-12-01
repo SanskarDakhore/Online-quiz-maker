@@ -6,21 +6,33 @@ import './Auth.css';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
+    fullName: '',
     role: 'student'
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   
-  const { register, loginWithGoogle } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
-  // Form validation
-  const validateForm = () => {
+  // Handle input change
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validate form
     const newErrors = {};
     
     if (!formData.fullName.trim()) {
@@ -30,7 +42,7 @@ const Register = () => {
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Please enter a valid email address';
     }
     
     if (!formData.password) {
@@ -43,49 +55,38 @@ const Register = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Handle input change
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error for this field
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    if (!formData.role) {
+      newErrors.role = 'Please select a role';
     }
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
     
-    if (!validateForm()) return;
+    setErrors(newErrors);
+    
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
     
     try {
       setLoading(true);
       setMessage('');
+      
       await register(formData.email, formData.password, formData.fullName, formData.role);
-      setMessage('Registration successful! Redirecting...');
-      setTimeout(() => {
-        navigate(formData.role === 'teacher' ? '/teacher/dashboard' : '/student/quizzes');
-      }, 1500);
+      
+      // Redirect based on role
+      if (formData.role === 'teacher') {
+        navigate('/teacher/dashboard');
+      } else {
+        navigate('/student/quizzes');
+      }
     } catch (error) {
-      setMessage(error.message || 'Failed to create account');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle Google Sign-In
-  const handleGoogleSignIn = async () => {
-    try {
-      setLoading(true);
-      await loginWithGoogle(formData.role);
-      navigate(formData.role === 'teacher' ? '/teacher/dashboard' : '/student/quizzes');
-    } catch (error) {
-      setMessage(error.message || 'Failed to sign in with Google');
+      console.error('Registration error:', error);
+      let errorMessage = 'Failed to create account';
+      
+      // Handle specific errors
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setMessage(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -100,18 +101,14 @@ const Register = () => {
         transition={{ duration: 0.5 }}
       >
         <h2 className="auth-title">Create Account</h2>
-        <p className="auth-subtitle">Join QuizMaster and start your journey</p>
+        <p className="auth-subtitle">Join our quiz platform today</p>
         
         {message && (
-          <motion.div 
-            className={`message ${message.includes('successful') ? 'success' : 'error'}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
+          <div className={`auth-message ${message.includes('Failed') ? 'error' : 'success'}`}>
             {message}
-          </motion.div>
+          </div>
         )}
-
+        
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <label htmlFor="fullName">Full Name</label>
@@ -126,7 +123,7 @@ const Register = () => {
             />
             {errors.fullName && <span className="error-message">{errors.fullName}</span>}
           </div>
-
+          
           <div className="input-group">
             <label htmlFor="email">Email</label>
             <input
@@ -140,7 +137,7 @@ const Register = () => {
             />
             {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
-
+          
           <div className="input-group">
             <label htmlFor="password">Password</label>
             <input
@@ -154,7 +151,7 @@ const Register = () => {
             />
             {errors.password && <span className="error-message">{errors.password}</span>}
           </div>
-
+          
           <div className="input-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
             <input
@@ -168,7 +165,7 @@ const Register = () => {
             />
             {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
           </div>
-
+          
           <div className="input-group">
             <label htmlFor="role">I am a...</label>
             <select
@@ -181,21 +178,16 @@ const Register = () => {
               <option value="teacher">Teacher</option>
             </select>
           </div>
-
+          
           <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
             {loading ? 'Creating Account...' : 'Register'}
           </button>
         </form>
-
+        
         <div className="divider">
           <span>OR</span>
         </div>
-
-        <button onClick={handleGoogleSignIn} className="btn btn-google btn-full" disabled={loading}>
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
-          Continue with Google
-        </button>
-
+        
         <p className="auth-footer">
           Already have an account? <Link to="/login">Login here</Link>
         </p>

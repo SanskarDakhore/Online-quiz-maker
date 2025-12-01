@@ -1,13 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged 
-} from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db, googleProvider } from '../firebase/config';
+import apiService from '../services/api';
+import sessionService from '../services/sessionService';
 
 const AuthContext = createContext();
 
@@ -27,21 +20,15 @@ export const AuthProvider = ({ children }) => {
   // Register new user
   const register = async (email, password, fullName, role) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const data = await apiService.register(email, password, fullName, role);
+      const user = data.user;
       
-      // Store user details in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        name: fullName,
-        email: email,
-        role: role,
-        createdAt: new Date().toISOString(),
-        badges: role === 'student' ? ['Quiz Rookie'] : []
-      });
+      setCurrentUser(user);
+      setUserRole(user.role);
       
-      return userCredential;
+      return data;
     } catch (error) {
+      console.error('Registration error:', error);
       throw error;
     }
   };
@@ -49,89 +36,147 @@ export const AuthProvider = ({ children }) => {
   // Login with email and password
   const login = async (email, password) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return userCredential;
+      console.log('Attempting login with email:', email);
+      const data = await apiService.login(email, password);
+      const user = data.user;
+      console.log('Login successful. User:', user);
+      
+      // Create session for the user
+      const session = sessionService.createSession(user.uid);
+      console.log('Created session:', session);
+      
+      // Store session ID in localStorage
+      localStorage.setItem('current_session_id', session.sessionId);
+      
+      // Store current user in localStorage to prevent immediate redirects
+      localStorage.setItem('current_user', JSON.stringify(user));
+      
+      console.log('Setting currentUser and userRole in state');
+      setCurrentUser(user);
+      setUserRole(user.role);
+      
+      console.log('Login function completed successfully');
+      return data;
     } catch (error) {
-      throw error;
-    }
-  };
-
-  // Login with Google
-  const loginWithGoogle = async (role) => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      
-      // Check if user exists in Firestore
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      
-      if (!userDoc.exists()) {
-        // Create new user document if doesn't exist
-        await setDoc(doc(db, 'users', user.uid), {
-          uid: user.uid,
-          name: user.displayName,
-          email: user.email,
-          role: role,
-          createdAt: new Date().toISOString(),
-          badges: role === 'student' ? ['Quiz Rookie'] : []
-        });
-      }
-      
-      return result;
-    } catch (error) {
+      console.error('Email/Password login error:', error);
       throw error;
     }
   };
 
   // Logout
-  const logout = () => {
-    return signOut(auth);
+  const logout = async () => {
+    try {
+      console.log('Logout function called');
+      // Remove current session
+      const sessionId = localStorage.getItem('current_session_id');
+      if (currentUser && sessionId) {
+        sessionService.removeSession(currentUser.uid, sessionId);
+        localStorage.removeItem('current_session_id');
+      }
+      
+      // Remove current user from localStorage
+      localStorage.removeItem('current_user');
+      
+      // Logout from API
+      await apiService.logout();
+      
+      console.log('Clearing currentUser and userRole state');
+      setCurrentUser(null);
+      setUserRole(null);
+      
+      console.log('Logout completed');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
-  // Get user role from Firestore
-  const getUserRole = async (uid) => {
+  // Get current user
+  const getCurrentUser = async () => {
     try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      if (userDoc.exists()) {
-        return userDoc.data().role;
-      }
-      return null;
+      const data = await apiService.getCurrentUser();
+      const user = data.user;
+      
+      // Update current user in localStorage
+      localStorage.setItem('current_user', JSON.stringify(user));
+      
+      setCurrentUser(user);
+      setUserRole(user.role);
+      
+      return user;
     } catch (error) {
-      console.error('Error getting user role:', error);
-      return null;
+      console.error('Error getting current user:', error);
+      // If token is invalid, logout
+      if (error.message.includes('token') || error.message.includes('Session expired')) {
+        await logout();
+      }
+      throw error;
     }
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      
-      if (user) {
-        const role = await getUserRole(user.uid);
-        setUserRole(role);
+    // Load sessions from storage
+    sessionService.loadSessionsFromStorage();
+    
+    // Check if user is already logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Instead of immediately calling getCurrentUser, check if we already have user data
+      // This prevents immediate redirects after login
+      const storedCurrentUser = localStorage.getItem('current_user');
+      if (storedCurrentUser) {
+        const user = JSON.parse(storedCurrentUser);
+        setCurrentUser(user);
+        setUserRole(user.role);
+        setLoading(false);
+        
+        // Still verify the user in the background
+        getCurrentUser()
+          .catch((error) => {
+            console.log('Background user verification failed:', error);
+            // If verification fails, it will be handled by the getCurrentUser function
+          });
       } else {
-        setUserRole(null);
+        getCurrentUser()
+          .then(() => {
+            setLoading(false);
+          })
+          .catch(() => {
+            setLoading(false);
+          });
       }
-      
+    } else {
       setLoading(false);
-    });
-
-    return unsubscribe;
+    }
+    
+    // Set up token refresh interval
+    const interval = setInterval(() => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // In a real app, you might want to refresh the token here
+        // For now, we'll just check if it's still valid
+        getCurrentUser().catch((error) => {
+          console.log('Token refresh failed:', error);
+          // If token is invalid, logout
+        });
+      }
+    }, 30 * 60 * 1000); // Check every 30 minutes
+    
+    return () => clearInterval(interval);
   }, []);
 
   const value = {
     currentUser,
     userRole,
+    loading,
     register,
     login,
-    loginWithGoogle,
     logout,
-    getUserRole
+    getCurrentUser
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

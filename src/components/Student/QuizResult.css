@@ -85,6 +85,104 @@
   font-weight: 600;
 }
 
+.concept-feedback {
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.concept-feedback h2 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.feedback-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-size: 1.125rem;
+}
+
+.concept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.concept-item {
+  padding: 1.5rem;
+  background: var(--glass-bg);
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+}
+
+.concept-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.concept-header h3 {
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.concept-score {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.concept-score.excellent {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.concept-score.good {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+
+.concept-score.needs-improvement {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+.concept-stats {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.concept-progress {
+  height: 8px;
+  background: var(--glass-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.concept-progress-bar {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.concept-recommendation {
+  font-size: 0.875rem;
+}
+
+.recommendation.positive {
+  color: var(--success);
+}
+
+.recommendation.moderate {
+  color: var(--warning);
+}
+
+.recommendation.negative {
+  color: var(--danger);
+}
+
 .answers-review {
   padding: 2rem;
   margin-bottom: 2rem;
@@ -228,6 +326,21 @@
 
 .explanation strong {
   color: var(--info);
+  font-style: normal;
+}
+
+.hint-used {
+  padding: 1rem;
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 4px solid var(--warning);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 1rem;
+}
+
+.hint-used strong {
+  color: var(--warning);
   font-style: normal;
 }
 

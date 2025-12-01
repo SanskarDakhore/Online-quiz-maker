@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import apiService from '../../services/api';
 import './QuizCreator.css';
 
 const QuizCreator = () => {
@@ -22,6 +20,9 @@ const QuizCreator = () => {
     difficulty: 'Medium',
     timer: 30, // minutes
     timerPerQuestion: false,
+    examMode: false,
+    resultReleaseMode: 'immediate',
+    resultReleaseDate: '',
     questions: []
   });
 
@@ -30,7 +31,8 @@ const QuizCreator = () => {
     options: ['', '', '', ''],
     correctAnswer: 0,
     explanation: '',
-    image: null,
+    hint: '',
+    concept: '',
     imageUrl: ''
   });
 
@@ -44,18 +46,24 @@ const QuizCreator = () => {
   const fetchQuizData = async () => {
     try {
       setLoading(true);
-      const quizDoc = await getDoc(doc(db, 'quizzes', quizId));
+      const quizResponse = await apiService.getQuiz(quizId);
       
-      if (quizDoc.exists()) {
-        const data = quizDoc.data();
+      if (quizResponse) {
         setQuizData({
-          title: data.title || '',
-          description: data.description || '',
-          category: data.category || 'General',
-          difficulty: data.difficulty || 'Medium',
-          timer: data.timer || 30,
-          timerPerQuestion: data.timerPerQuestion || false,
-          questions: data.questions || []
+          title: quizResponse.title || '',
+          description: quizResponse.description || '',
+          category: quizResponse.category || 'General',
+          difficulty: quizResponse.difficulty || 'Medium',
+          timer: quizResponse.timer || 30,
+          timerPerQuestion: quizResponse.timerPerQuestion || false,
+          examMode: quizResponse.examMode || false,
+          resultReleaseMode: quizResponse.resultReleaseMode || 'immediate',
+          resultReleaseDate: quizResponse.resultReleaseDate || '',
+          questions: quizResponse.questions ? quizResponse.questions.map(q => ({
+            ...q,
+            hint: q.hint || '',
+            concept: q.concept || ''
+          })) : []
         });
         setIsEditMode(true);
       } else {
@@ -64,7 +72,12 @@ const QuizCreator = () => {
       }
     } catch (error) {
       console.error('Error fetching quiz:', error);
-      alert('Failed to load quiz');
+      if (error.message.includes('Session expired')) {
+        alert('Your session has expired. Please log in again.');
+        navigate('/login');
+      } else {
+        alert('Failed to load quiz: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -98,21 +111,16 @@ const QuizCreator = () => {
     }));
   };
 
-  // Handle image upload
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setCurrentQuestion(prev => ({
-        ...prev,
-        image: file
-      }));
-    }
-  };
-
   // Add question to quiz
   const addQuestion = () => {
-    if (!currentQuestion.questionText || currentQuestion.options.some(opt => !opt)) {
-      alert('Please fill in all question fields');
+    // Validation
+    if (!currentQuestion.questionText.trim()) {
+      alert('Please enter a question');
+      return;
+    }
+    
+    if (currentQuestion.options.some(opt => !opt.trim())) {
+      alert('Please fill in all option fields');
       return;
     }
 
@@ -127,202 +135,271 @@ const QuizCreator = () => {
       options: ['', '', '', ''],
       correctAnswer: 0,
       explanation: '',
-      image: null,
+      hint: '',
+      concept: '',
       imageUrl: ''
     });
   };
 
   // Remove question
   const removeQuestion = (index) => {
-    setQuizData(prev => ({
-      ...prev,
-      questions: prev.questions.filter((_, i) => i !== index)
-    }));
+    if (window.confirm('Are you sure you want to remove this question?')) {
+      setQuizData(prev => ({
+        ...prev,
+        questions: prev.questions.filter((_, i) => i !== index)
+      }));
+    }
   };
 
   // Save quiz
   const saveQuiz = async (publish = false) => {
-    if (!quizData.title || quizData.questions.length === 0) {
-      alert('Please add a title and at least one question');
+    console.log('Saving quiz with publish status:', publish);
+    if (!quizData.title.trim()) {
+      alert('Please enter a quiz title');
+      return;
+    }
+    
+    if (quizData.questions.length === 0) {
+      alert('Please add at least one question');
       return;
     }
 
     try {
       setLoading(true);
 
-      // Upload images and get URLs
-      const questionsWithImages = await Promise.all(
-        quizData.questions.map(async (question) => {
-          if (question.image) {
-            const imageRef = ref(storage, `quiz-images/${Date.now()}_${question.image.name}`);
-            await uploadBytes(imageRef, question.image);
-            const imageUrl = await getDownloadURL(imageRef);
-            return { ...question, imageUrl, image: null };
-          }
-          return { ...question, image: null };
-        })
-      );
-
-      const quizDoc = {
+      // Prepare quiz data for submission
+      const quizPayload = {
         ...quizData,
-        questions: questionsWithImages,
-        createdBy: currentUser.uid,
         published: publish
       };
 
       if (isEditMode) {
         // Update existing quiz
-        await updateDoc(doc(db, 'quizzes', quizId), quizDoc);
+        await apiService.updateQuiz(quizId, quizPayload);
         alert(`Quiz ${publish ? 'published' : 'updated'} successfully!`);
       } else {
         // Create new quiz
-        quizDoc.createdAt = new Date().toISOString();
-        await addDoc(collection(db, 'quizzes'), quizDoc);
+        await apiService.createQuiz(quizPayload);
         alert(`Quiz ${publish ? 'published' : 'saved as draft'} successfully!`);
       }
       
       navigate('/teacher/quizzes');
     } catch (error) {
       console.error('Error saving quiz:', error);
-      alert('Failed to save quiz');
+      if (error.message.includes('Session expired')) {
+        alert('Your session has expired. Please log in again.');
+        navigate('/login');
+      } else {
+        alert('Failed to save quiz: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Preview quiz
+  const previewQuiz = () => {
+    if (quizData.questions.length === 0) {
+      alert('Please add at least one question to preview');
+      return;
+    }
+    setShowPreview(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="quiz-creator-container flex-center">
+        <div className="spinner"></div>
+        <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="quiz-creator-container">
-      <motion.div 
-        className="quiz-creator"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <div className="creator-header">
-          <div>
-            <h1>{isEditMode ? 'Edit Quiz ✏️' : 'Create New Quiz 📝'}</h1>
-          </div>
-          <div className="header-actions">
-            <button onClick={() => navigate('/teacher/quizzes')} className="btn btn-outline">
-              ← Back
-            </button>
-            <button onClick={() => setShowPreview(true)} className="btn btn-secondary">
-              👁️ Preview
-            </button>
-            <button onClick={() => saveQuiz(false)} className="btn btn-outline" disabled={loading}>
-              💾 Save Draft
-            </button>
-            <button onClick={() => saveQuiz(true)} className="btn btn-primary" disabled={loading}>
-              🚀 Publish Quiz
-            </button>
-          </div>
+      <div className="creator-header">
+        <h1>{isEditMode ? '✏️ Edit Quiz' : '➕ Create New Quiz'}</h1>
+        <div className="header-actions">
+          <button 
+            onClick={() => navigate('/teacher/quizzes')} 
+            className="btn btn-secondary"
+          >
+            ← Back to Quizzes
+          </button>
         </div>
+      </div>
 
-        {/* Quiz Information */}
-        <motion.div 
-          className="glass-card creator-section"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-        >
-          <h2>Quiz Information</h2>
-          
-          <div className="input-group">
-            <label>Quiz Title *</label>
+      {/* Quiz Info Form */}
+      <motion.div 
+        className="quiz-info-form"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <h2>📋 Quiz Information</h2>
+        <div className="form-grid">
+          <div className="form-group">
+            <label htmlFor="title">Title *</label>
             <input
               type="text"
+              id="title"
               name="title"
               value={quizData.title}
               onChange={handleQuizChange}
               placeholder="Enter quiz title"
+              className="form-input"
             />
           </div>
 
-          <div className="input-group">
-            <label>Description</label>
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
             <textarea
+              id="description"
               name="description"
               value={quizData.description}
               onChange={handleQuizChange}
-              placeholder="What is this quiz about?"
+              placeholder="Enter quiz description"
+              className="form-input"
               rows="3"
             />
           </div>
 
-          <div className="input-row">
-            <div className="input-group">
-              <label>Category</label>
-              <select name="category" value={quizData.category} onChange={handleQuizChange}>
-                <option>General</option>
-                <option>Science</option>
-                <option>Math</option>
-                <option>History</option>
-                <option>Technology</option>
-                <option>Literature</option>
-                <option>Other</option>
-              </select>
-            </div>
-
-            <div className="input-group">
-              <label>Difficulty</label>
-              <select name="difficulty" value={quizData.difficulty} onChange={handleQuizChange}>
-                <option>Easy</option>
-                <option>Medium</option>
-                <option>Hard</option>
-              </select>
-            </div>
-
-            <div className="input-group">
-              <label>Timer (minutes)</label>
-              <input
-                type="number"
-                name="timer"
-                value={quizData.timer}
-                onChange={handleQuizChange}
-                min="1"
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="category">Category</label>
+            <select
+              id="category"
+              name="category"
+              value={quizData.category}
+              onChange={handleQuizChange}
+              className="form-input"
+            >
+              <option value="General">General</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="Science">Science</option>
+              <option value="History">History</option>
+              <option value="Geography">Geography</option>
+              <option value="Literature">Literature</option>
+              <option value="Technology">Technology</option>
+              <option value="Art">Art</option>
+            </select>
           </div>
 
-          <div className="input-group">
-            <label className="checkbox-label">
+          <div className="form-group">
+            <label htmlFor="difficulty">Difficulty</label>
+            <select
+              id="difficulty"
+              name="difficulty"
+              value={quizData.difficulty}
+              onChange={handleQuizChange}
+              className="form-input"
+            >
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="timer">Timer (minutes)</label>
+            <input
+              type="number"
+              id="timer"
+              name="timer"
+              value={quizData.timer}
+              onChange={handleQuizChange}
+              min="1"
+              max="180"
+              className="form-input"
+            />
+            <div className="input-hint">Set the total time for the quiz</div>
+          </div>
+
+          <div className="form-group checkbox-group">
+            <label>
               <input
                 type="checkbox"
                 name="timerPerQuestion"
                 checked={quizData.timerPerQuestion}
                 onChange={handleQuizChange}
               />
-              <span>Apply timer per question instead of entire quiz</span>
+              Timer per question
             </label>
           </div>
-        </motion.div>
 
-        {/* Add Questions */}
-        <motion.div 
-          className="glass-card creator-section"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-        >
-          <h2>Add Question {quizData.questions.length > 0 && `(${quizData.questions.length} added)`}</h2>
+          <div className="form-group checkbox-group">
+            <label>
+              <input
+                type="checkbox"
+                name="examMode"
+                checked={quizData.examMode}
+                onChange={handleQuizChange}
+              />
+              Exam Mode (Restricts navigation and copy/paste)
+            </label>
+          </div>
 
-          <div className="input-group">
-            <label>Question Text *</label>
+          <div className="form-group">
+            <label htmlFor="resultReleaseMode">Result Release Mode</label>
+            <select
+              id="resultReleaseMode"
+              name="resultReleaseMode"
+              value={quizData.resultReleaseMode}
+              onChange={handleQuizChange}
+              className="form-input"
+            >
+              <option value="immediate">Immediate</option>
+              <option value="afterAll">After all attempts</option>
+              <option value="specificDate">Specific date</option>
+            </select>
+          </div>
+
+          {quizData.resultReleaseMode === 'specificDate' && (
+            <div className="form-group">
+              <label htmlFor="resultReleaseDate">Result Release Date</label>
+              <input
+                type="datetime-local"
+                id="resultReleaseDate"
+                name="resultReleaseDate"
+                value={quizData.resultReleaseDate}
+                onChange={handleQuizChange}
+                className="form-input"
+              />
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Question Creator */}
+      <motion.div 
+        className="question-creator"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <h2>❓ Add Question</h2>
+        <div className="question-form">
+          <div className="form-group">
+            <label htmlFor="questionText">Question *</label>
             <textarea
+              id="questionText"
               name="questionText"
               value={currentQuestion.questionText}
               onChange={handleQuestionChange}
               placeholder="Enter your question"
+              className="form-input"
               rows="2"
             />
           </div>
 
           <div className="options-grid">
-            {currentQuestion.options.map((option, index) => (
-              <div key={index} className="option-input">
+            {[0, 1, 2, 3].map((index) => (
+              <div key={index} className="option-group">
+                <label>Option {String.fromCharCode(65 + index)} *</label>
                 <input
                   type="text"
-                  value={option}
+                  value={currentQuestion.options[index]}
                   onChange={(e) => handleOptionChange(index, e.target.value)}
-                  placeholder={`Option ${index + 1}`}
+                  placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                  className="form-input"
                 />
                 <label className="radio-label">
                   <input
@@ -331,132 +408,194 @@ const QuizCreator = () => {
                     checked={currentQuestion.correctAnswer === index}
                     onChange={() => setCurrentQuestion(prev => ({ ...prev, correctAnswer: index }))}
                   />
-                  <span>Correct</span>
+                  Mark as Correct Answer
                 </label>
               </div>
             ))}
           </div>
 
-          <div className="input-group">
-            <label>Explanation (Optional)</label>
+          <div className="form-group">
+            <label htmlFor="explanation">Explanation</label>
             <textarea
+              id="explanation"
               name="explanation"
               value={currentQuestion.explanation}
               onChange={handleQuestionChange}
-              placeholder="Explain the correct answer"
+              placeholder="Explanation for the correct answer"
+              className="form-input"
               rows="2"
             />
+            <div className="input-hint">Help students understand why this is the correct answer</div>
           </div>
 
-          <div className="input-group">
-            <label>Image (Optional)</label>
+          <div className="form-group">
+            <label htmlFor="hint">Hint</label>
             <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
+              type="text"
+              id="hint"
+              name="hint"
+              value={currentQuestion.hint}
+              onChange={handleQuestionChange}
+              placeholder="Hint for this question (optional)"
+              className="form-input"
             />
-            {currentQuestion.image && (
-              <p className="file-name">Selected: {currentQuestion.image.name}</p>
-            )}
+            <div className="input-hint">Provide a clue to help students answer correctly</div>
           </div>
 
-          <button onClick={addQuestion} className="btn btn-primary">
+          <div className="form-group">
+            <label htmlFor="concept">Concept</label>
+            <input
+              type="text"
+              id="concept"
+              name="concept"
+              value={currentQuestion.concept}
+              onChange={handleQuestionChange}
+              placeholder="Learning concept (optional)"
+              className="form-input"
+            />
+            <div className="input-hint">Identify the learning objective or concept</div>
+          </div>
+
+          <button onClick={addQuestion} className="add-question-btn">
             ➕ Add Question
           </button>
-        </motion.div>
-
-        {/* Questions List */}
-        {quizData.questions.length > 0 && (
-          <motion.div 
-            className="glass-card creator-section"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <h2>Questions ({quizData.questions.length})</h2>
-            
-            <div className="questions-list">
-              {quizData.questions.map((question, index) => (
-                <motion.div 
-                  key={index}
-                  className="question-preview"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <div className="question-header">
-                    <h4>Q{index + 1}. {question.questionText}</h4>
-                    <button 
-                      onClick={() => removeQuestion(index)}
-                      className="btn btn-danger btn-sm"
-                    >
-                      🗑️ Remove
-                    </button>
-                  </div>
-                  <div className="question-options">
-                    {question.options.map((opt, i) => (
-                      <p key={i} className={i === question.correctAnswer ? 'correct-option' : ''}>
-                        {i === question.correctAnswer && '✅ '}{opt}
-                      </p>
-                    ))}
-                  </div>
-                  {question.explanation && (
-                    <p className="question-explanation">💡 {question.explanation}</p>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
+        </div>
       </motion.div>
+
+      {/* Questions List */}
+      {quizData.questions.length > 0 && (
+        <motion.div 
+          className="questions-list"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h2>📝 Questions <span className="question-counter">({quizData.questions.length})</span></h2>
+          <div className="questions-container">
+            {quizData.questions.map((question, index) => (
+              <motion.div 
+                key={index} 
+                className="question-item"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <div className="question-header">
+                  <h3>Question {index + 1}: {question.questionText.substring(0, 100)}{question.questionText.length > 100 ? '...' : ''}</h3>
+                  <button 
+                    onClick={() => removeQuestion(index)}
+                    className="btn btn-danger btn-small"
+                  >
+                    🗑️ Remove
+                  </button>
+                </div>
+                <div className="question-options">
+                  {question.options.map((option, optIndex) => (
+                    <div 
+                      key={optIndex} 
+                      className={`option-preview ${question.correctAnswer === optIndex ? 'correct' : ''}`}
+                    >
+                      <span className="option-letter">{String.fromCharCode(65 + optIndex)}</span>
+                      <span className="option-text">{option.substring(0, 50)}{option.length > 50 ? '...' : ''}</span>
+                      {question.correctAnswer === optIndex && <span className="correct-badge">✓</span>}
+                    </div>
+                  ))}
+                </div>
+                {question.explanation && (
+                  <div className="question-explanation">
+                    <strong>Explanation:</strong> {question.explanation.substring(0, 150)}{question.explanation.length > 150 ? '...' : ''}
+                  </div>
+                )}
+                {question.hint && (
+                  <div className="question-hint">
+                    <strong>Hint:</strong> {question.hint}
+                  </div>
+                )}
+                {question.concept && (
+                  <div className="question-concept">
+                    <strong>Concept:</strong> {question.concept}
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="action-buttons">
+        <button 
+          onClick={() => saveQuiz(false)} 
+          className="btn btn-secondary"
+          disabled={loading}
+        >
+          💾 Save as Draft
+        </button>
+        <button 
+          onClick={previewQuiz} 
+          className="btn btn-info"
+          disabled={quizData.questions.length === 0}
+        >
+          👁️ Preview Quiz
+        </button>
+        <button 
+          onClick={() => saveQuiz(true)} 
+          className="btn btn-success"
+          disabled={loading || !quizData.title.trim() || quizData.questions.length === 0}
+        >
+          🚀 Publish Quiz
+        </button>
+      </div>
 
       {/* Preview Modal */}
       <AnimatePresence>
         {showPreview && (
           <motion.div 
-            className="modal-overlay"
+            className="preview-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setShowPreview(false)}
           >
-            <motion.div 
-              className="modal-content glass-card"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-header">
-                <h2>Quiz Preview</h2>
-                <button onClick={() => setShowPreview(false)} className="close-btn">✕</button>
+            <div className="preview-content">
+              <div className="preview-header">
+                <h2>{quizData.title || 'Untitled Quiz'} Preview</h2>
+                <button 
+                  onClick={() => setShowPreview(false)}
+                  className="btn btn-danger btn-small"
+                >
+                  ✕ Close
+                </button>
               </div>
-              
-              <div className="modal-body">
-                <h3>{quizData.title}</h3>
-                <p>{quizData.description}</p>
+              <div className="preview-body">
+                <p>{quizData.description || 'No description provided'}</p>
                 <div className="preview-meta">
-                  <span>📂 {quizData.category}</span>
-                  <span>📊 {quizData.difficulty}</span>
                   <span>⏱️ {quizData.timer} min</span>
                   <span>❓ {quizData.questions.length} questions</span>
+                  <span>📊 {quizData.difficulty}</span>
+                  {quizData.examMode && <span className="exam-mode-badge">🔒 Exam Mode</span>}
                 </div>
-
                 <div className="preview-questions">
-                  {quizData.questions.map((q, i) => (
-                    <div key={i} className="preview-question">
-                      <h4>Question {i + 1}</h4>
-                      <p>{q.questionText}</p>
-                      <ul>
-                        {q.options.map((opt, j) => (
-                          <li key={j}>{opt}</li>
+                  {quizData.questions.slice(0, 3).map((question, index) => (
+                    <div key={index} className="preview-question">
+                      <h4>{index + 1}. {question.questionText}</h4>
+                      <div className="preview-options">
+                        {question.options.map((option, optIndex) => (
+                          <div 
+                            key={optIndex} 
+                            className="preview-option"
+                          >
+                            {String.fromCharCode(65 + optIndex)}. {option}
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   ))}
+                  {quizData.questions.length > 3 && (
+                    <p>+ {quizData.questions.length - 3} more questions</p>
+                  )}
                 </div>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

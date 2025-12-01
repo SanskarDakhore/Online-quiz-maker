@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
+import apiService from '../../services/api';
 import './TeacherQuizzes.css';
 
 const TeacherQuizzes = () => {
@@ -19,25 +18,19 @@ const TeacherQuizzes = () => {
 
   const fetchQuizzes = async () => {
     try {
-      const q = query(collection(db, 'quizzes'), where('createdBy', '==', currentUser.uid));
-      const querySnapshot = await getDocs(q);
+      const quizzesData = await apiService.getMyQuizzes();
       
-      const quizzesData = [];
-      for (const docSnapshot of querySnapshot.docs) {
-        const quizData = { id: docSnapshot.id, ...docSnapshot.data() };
-        
-        // Get attempt count
-        const resultsQuery = query(collection(db, 'results'), where('quizId', '==', docSnapshot.id));
-        const resultsSnapshot = await getDocs(resultsQuery);
-        quizData.attemptCount = resultsSnapshot.size;
-        
-        quizzesData.push(quizData);
-      }
-
+      // Sort quizzes by creation date (newest first)
       quizzesData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setQuizzes(quizzesData);
     } catch (error) {
       console.error('Error fetching quizzes:', error);
+      if (error.message.includes('Session expired')) {
+        alert('Your session has expired. Please log in again.');
+        navigate('/login');
+      } else {
+        alert('Failed to fetch quizzes: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -45,16 +38,21 @@ const TeacherQuizzes = () => {
 
   const togglePublish = async (quizId, currentStatus) => {
     try {
-      await updateDoc(doc(db, 'quizzes', quizId), {
-        published: !currentStatus
-      });
+      console.log('Toggling publish status for quiz:', quizId, 'Current status:', currentStatus);
+      await apiService.publishQuiz(quizId, !currentStatus);
       
       setQuizzes(quizzes.map(q => 
-        q.id === quizId ? { ...q, published: !currentStatus } : q
+        q.quizId === quizId ? { ...q, published: !currentStatus } : q
       ));
+      console.log('Quiz publish status updated successfully');
     } catch (error) {
       console.error('Error toggling publish status:', error);
-      alert('Failed to update quiz status');
+      if (error.message.includes('Session expired')) {
+        alert('Your session has expired. Please log in again.');
+        navigate('/login');
+      } else {
+        alert('Failed to update quiz status: ' + error.message);
+      }
     }
   };
 
@@ -64,12 +62,17 @@ const TeacherQuizzes = () => {
     }
 
     try {
-      await deleteDoc(doc(db, 'quizzes', quizId));
-      setQuizzes(quizzes.filter(q => q.id !== quizId));
+      await apiService.deleteQuiz(quizId);
+      setQuizzes(quizzes.filter(q => q.quizId !== quizId));
       alert('Quiz deleted successfully');
     } catch (error) {
       console.error('Error deleting quiz:', error);
-      alert('Failed to delete quiz');
+      if (error.message.includes('Session expired')) {
+        alert('Your session has expired. Please log in again.');
+        navigate('/login');
+      } else {
+        alert('Failed to delete quiz: ' + error.message);
+      }
     }
   };
 
@@ -148,7 +151,7 @@ const TeacherQuizzes = () => {
         <div className="quizzes-grid">
           {filteredQuizzes.map((quiz, index) => (
             <motion.div
-              key={quiz.id}
+              key={quiz.quizId}
               className="quiz-management-card glass-card"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -205,24 +208,24 @@ const TeacherQuizzes = () => {
               </div>
 
               <div className="quiz-actions">
-                <Link 
-                  to={`/teacher/edit-quiz/${quiz.id}`} 
-                  className="btn btn-secondary btn-sm"
-                >
+                <Link to={`/teacher/edit-quiz/${quiz.quizId}`} className="btn btn-secondary btn-small">
                   ✏️ Edit
                 </Link>
-                <button
-                  onClick={() => togglePublish(quiz.id, quiz.published)}
-                  className={`btn btn-sm ${quiz.published ? 'btn-warning' : 'btn-success'}`}
+                <button 
+                  onClick={() => togglePublish(quiz.quizId, quiz.published)}
+                  className={`btn btn-${quiz.published ? 'warning' : 'success'} btn-small`}
                 >
-                  {quiz.published ? '📤 Unpublish' : '📥 Publish'}
+                  {quiz.published ? '🔒 Unpublish' : '🚀 Publish'}
                 </button>
-                <button
-                  onClick={() => deleteQuiz(quiz.id)}
-                  className="btn btn-danger btn-sm"
+                <button 
+                  onClick={() => deleteQuiz(quiz.quizId)}
+                  className="btn btn-danger btn-small"
                 >
                   🗑️ Delete
                 </button>
+                <Link to={`/teacher/results/${quiz.quizId}`} className="btn btn-info btn-small">
+                  📊 Results
+                </Link>
               </div>
             </motion.div>
           ))}

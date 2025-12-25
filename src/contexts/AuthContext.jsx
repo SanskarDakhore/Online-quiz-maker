@@ -116,6 +116,16 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Load sessions from storage
     sessionService.loadSessionsFromStorage();
+    // Try to activate the database (resume paused Atlas cluster) when app loads
+    // This call is non-blocking and will silently fail if not configured
+    (async () => {
+      try {
+        console.log('Attempting server-side DB activation (non-blocking)');
+        await (await import('../services/api')).default.activateDb();
+      } catch (err) {
+        console.log('DB activation attempt failed or not configured:', err?.message || err);
+      }
+    })();
     
     // Check if user is already logged in
     const token = localStorage.getItem('token');

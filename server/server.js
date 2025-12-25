@@ -11,6 +11,7 @@ import Result from './models/Result.js';
 import authRoutes from './routes/auth.js';
 import quizRoutes from './routes/quizzes.js';
 import resultRoutes from './routes/results.js';
+import activateRoute from './routes/activate.js';
 
 dotenv.config();
 
@@ -28,6 +29,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/results', resultRoutes);
+// Endpoint to trigger Atlas resume (safe-guarded by env vars)
+app.use('/api/activate-db', activateRoute);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

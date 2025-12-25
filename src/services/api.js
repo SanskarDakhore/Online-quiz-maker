@@ -1,5 +1,8 @@
 // API service for QuizMaster application
-const API_BASE_URL = 'http://localhost:5000/api';
+// For Vercel deployment, use relative paths to API routes
+const API_BASE_URL = (typeof window !== 'undefined' && window.location.hostname !== 'localhost') 
+  ? '/api' // Use relative path for deployed version
+  : import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'; // Use env var or localhost for dev
 
 class ApiService {
   constructor() {
@@ -428,6 +431,25 @@ class ApiService {
         ];
       }
       throw error;
+    }
+  }
+
+  // Trigger server-side activation (e.g., resume Atlas cluster)
+  async activateDb() {
+    try {
+      // For Vercel deployment, always use relative path
+      const isDeployed = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+      const url = isDeployed ? '/api/activate-db' : `${API_BASE_URL}/activate-db`;
+      const response = await fetch(url, { method: 'POST' });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        console.warn('activateDb failed:', response.status, err);
+        return null;
+      }
+      return await response.json();
+    } catch (err) {
+      console.error('activateDb request error:', err);
+      return null;
     }
   }
 }

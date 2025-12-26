@@ -44,6 +44,10 @@ const resultSchema = new mongoose.Schema({
   tabSwitchCount: {
     type: Number,
     default: 0
+  },
+  timeTaken: {
+    type: Number,
+    default: null
   }
 });
 

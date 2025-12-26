@@ -152,7 +152,7 @@ router.delete('/:quizId', authenticateToken, authorizeRole('teacher'), async (re
       return res.status(404).json({ error: 'Quiz not found or access denied' });
     }
     
-    await quiz.remove();
+    await Quiz.deleteOne({ _id: quiz._id });
     res.json({ message: 'Quiz deleted successfully' });
   } catch (error) {
     console.error('Error deleting quiz:', error);

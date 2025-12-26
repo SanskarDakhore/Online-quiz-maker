@@ -1,9 +1,13 @@
 // API service for QuizMaster application
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:5002/api';
 
 class ApiService {
   constructor() {
     this.token = localStorage.getItem('token');
+    // Initialize mock quizzes storage
+    if (!localStorage.getItem('mock_quizzes')) {
+      localStorage.setItem('mock_quizzes', JSON.stringify([]));
+    }
   }
 
   setToken(token) {
@@ -41,15 +45,18 @@ class ApiService {
       const response = await fetch(url, config);
       console.log('Response status:', response.status);
       
-      // If token is invalid, remove it
+      // If token is invalid, remove it and show error
       if (response.status === 401 || response.status === 403) {
         console.log('Token invalid, removing token');
         this.removeToken();
+        
+        // With JWT-based authentication, if the token is invalid, the session has expired
         throw new Error('Session expired. Please log in again.');
       }
       
-      // Handle database disconnected case
-      if (response.status === 503) {
+      // Handle database disconnected case - this might be a server connection issue
+      if (response.status === 503 || response.status === 0) {
+        // If the server is not responding, use fallback behavior
         throw new Error('Database is not connected. Some features may be limited.');
       }
       
@@ -63,7 +70,9 @@ class ApiService {
       console.error('Request error:', error);
       // Provide more specific error messages
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        throw new Error('Cannot connect to the server. Please make sure the backend is running.');
+        // This is likely a network error - server not running
+        // Use fallback behavior for disconnected database
+        throw new Error('Database is not connected. Some features may be limited.');
       }
       throw error;
     }
@@ -183,26 +192,12 @@ class ApiService {
     try {
       return await this.request('/quizzes');
     } catch (error) {
-      // Return mock quizzes when database is disconnected
+      // Return mock quizzes when database is not connected
       if (error.message.includes('Database is not connected')) {
-        return [
-          {
-            quizId: 'mock-quiz-1',
-            title: 'Sample Quiz',
-            description: 'This is a sample quiz for demonstration',
-            category: 'General',
-            difficulty: 'Medium',
-            timer: 30,
-            questions: [
-              {
-                questionText: 'What is 2+2?',
-                options: ['3', '4', '5', '6'],
-                correctAnswer: 1,
-                explanation: '2+2 equals 4'
-              }
-            ]
-          }
-        ];
+        // Get quizzes from localStorage
+        const mockQuizzes = JSON.parse(localStorage.getItem('mock_quizzes') || '[]');
+        // Only return published quizzes
+        return mockQuizzes.filter(quiz => quiz.published === true);
       }
       throw error;
     }
@@ -212,27 +207,11 @@ class ApiService {
     try {
       return await this.request('/quizzes/my-quizzes');
     } catch (error) {
-      // Return mock quizzes when database is disconnected
+      // Return mock quizzes when database is not connected
       if (error.message.includes('Database is not connected')) {
-        return [
-          {
-            quizId: 'mock-quiz-1',
-            title: 'My Sample Quiz',
-            description: 'This is a sample quiz I created',
-            category: 'General',
-            difficulty: 'Medium',
-            timer: 30,
-            published: true,
-            questions: [
-              {
-                questionText: 'What is the capital of France?',
-                options: ['London', 'Berlin', 'Paris', 'Madrid'],
-                correctAnswer: 2,
-                explanation: 'The capital of France is Paris'
-              }
-            ]
-          }
-        ];
+        // Get all quizzes from localStorage (for the current user in demo mode)
+        const mockQuizzes = JSON.parse(localStorage.getItem('mock_quizzes') || '[]');
+        return mockQuizzes;
       }
       throw error;
     }
@@ -244,6 +223,14 @@ class ApiService {
     } catch (error) {
       // Return mock quiz when database is disconnected
       if (error.message.includes('Database is not connected')) {
+        // Get quiz from localStorage by ID
+        const mockQuizzes = JSON.parse(localStorage.getItem('mock_quizzes') || '[]');
+        const quiz = mockQuizzes.find(q => q.quizId === quizId);
+        if (quiz) {
+          return quiz;
+        }
+        
+        // If not found, return a default quiz
         return {
           quizId: quizId || 'mock-quiz-1',
           title: 'Sample Quiz',
@@ -251,6 +238,7 @@ class ApiService {
           category: 'General',
           difficulty: 'Medium',
           timer: 30,
+          published: true,
           questions: [
             {
               questionText: 'What is 2+2?',
@@ -284,11 +272,20 @@ class ApiService {
       console.error('Error creating quiz:', error);
       // Mock create quiz when database is disconnected
       if (error.message.includes('Database is not connected')) {
-        return {
+        // Create a new quiz and save it to localStorage
+        const newQuiz = {
           ...quizData,
           quizId: 'mock-quiz-' + Date.now(),
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          published: quizData.published || false
         };
+        
+        // Add to existing quizzes in localStorage
+        const existingQuizzes = JSON.parse(localStorage.getItem('mock_quizzes') || '[]');
+        existingQuizzes.push(newQuiz);
+        localStorage.setItem('mock_quizzes', JSON.stringify(existingQuizzes));
+        
+        return newQuiz;
       }
       throw error;
     }
@@ -307,11 +304,29 @@ class ApiService {
       console.error('Error updating quiz:', error);
       // Mock update quiz when database is disconnected
       if (error.message.includes('Database is not connected')) {
-        return {
-          ...quizData,
-          quizId: quizId,
-          updatedAt: new Date().toISOString()
-        };
+        // Update the quiz in localStorage
+        const existingQuizzes = JSON.parse(localStorage.getItem('mock_quizzes') || '[]');
+        const quizIndex = existingQuizzes.findIndex(q => q.quizId === quizId);
+        
+        if (quizIndex !== -1) {
+          existingQuizzes[quizIndex] = {
+            ...quizData,
+            quizId: quizId,
+            updatedAt: new Date().toISOString()
+          };
+          localStorage.setItem('mock_quizzes', JSON.stringify(existingQuizzes));
+          return existingQuizzes[quizIndex];
+        } else {
+          // If quiz doesn't exist, create it
+          const newQuiz = {
+            ...quizData,
+            quizId: quizId,
+            updatedAt: new Date().toISOString()
+          };
+          existingQuizzes.push(newQuiz);
+          localStorage.setItem('mock_quizzes', JSON.stringify(existingQuizzes));
+          return newQuiz;
+        }
       }
       throw error;
     }
@@ -325,6 +340,10 @@ class ApiService {
     } catch (error) {
       // Mock delete quiz when database is disconnected
       if (error.message.includes('Database is not connected')) {
+        // Remove quiz from localStorage
+        const existingQuizzes = JSON.parse(localStorage.getItem('mock_quizzes') || '[]');
+        const filteredQuizzes = existingQuizzes.filter(q => q.quizId !== quizId);
+        localStorage.setItem('mock_quizzes', JSON.stringify(filteredQuizzes));
         return { message: 'Quiz deleted successfully (mock)' };
       }
       throw error;
@@ -344,6 +363,15 @@ class ApiService {
       console.error('Error publishing quiz:', error);
       // Mock publish quiz when database is disconnected
       if (error.message.includes('Database is not connected')) {
+        // Update the published status in localStorage
+        const existingQuizzes = JSON.parse(localStorage.getItem('mock_quizzes') || '[]');
+        const quizIndex = existingQuizzes.findIndex(q => q.quizId === quizId);
+        
+        if (quizIndex !== -1) {
+          existingQuizzes[quizIndex].published = published;
+          existingQuizzes[quizIndex].updatedAt = new Date().toISOString();
+          localStorage.setItem('mock_quizzes', JSON.stringify(existingQuizzes));
+        }
         return { message: `Quiz ${published ? 'published' : 'unpublished'} successfully (mock)` };
       }
       throw error;

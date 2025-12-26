@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
@@ -10,20 +10,51 @@ const QuizResult = () => {
   const { resultId } = useParams();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [result, setResult] = useState(null);
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [earnedBadge, setEarnedBadge] = useState(null);
 
   useEffect(() => {
-    fetchResult();
-  }, [resultId]);
+    // Check if result data is passed via state
+    if (location.state?.resultData) {
+      // Use the result data passed from QuizPlayer
+      const resultData = location.state.resultData;
+      const quizTitle = location.state.quizTitle;
+      
+      setResult(resultData);
+      setQuiz({
+        quizId: resultData.quizId,
+        title: quizTitle,
+        questions: location.state?.quizQuestions || [] // Include questions for detailed review
+      });
+      setLoading(false);
+    } else {
+      fetchResult();
+    }
+  }, [resultId, location.state]);
 
   const fetchResult = async () => {
     try {
       // Fetch result
       const resultResponse = await apiService.getResult(resultId);
       if (!resultResponse) {
+        console.error('Result not found in database, but may have been submitted recently');
+        // If we have result data in state, we can use that as fallback
+        if (location.state?.resultData) {
+          const resultData = location.state.resultData;
+          const quizTitle = location.state.quizTitle;
+          
+          setResult(resultData);
+          setQuiz({
+            quizId: resultData.quizId,
+            title: quizTitle,
+            questions: [] // We don't need the full questions array for display
+          });
+          return;
+        }
+        
         alert('Result not found');
         navigate('/student/quizzes');
         return;
@@ -36,10 +67,25 @@ const QuizResult = () => {
       setQuiz({
         quizId: resultData.quizId,
         title: resultData.quizTitle,
-        questions: [] // We don't need the full questions array for display
+        questions: location.state?.quizQuestions || [] // Include questions for detailed review
       });
     } catch (error) {
       console.error('Error fetching result:', error);
+      // If we have result data in state, we can use that as fallback
+      if (location.state?.resultData) {
+        const resultData = location.state.resultData;
+        const quizTitle = location.state.quizTitle;
+        
+        setResult(resultData);
+        setQuiz({
+          quizId: resultData.quizId,
+          title: quizTitle,
+          questions: location.state?.quizQuestions || [] // Include questions for detailed review
+        });
+        setLoading(false);
+        return;
+      }
+      
       alert('Error fetching result: ' + error.message);
       navigate('/student/quizzes');
     } finally {
@@ -121,9 +167,9 @@ const QuizResult = () => {
             </div>
           </div>
 
-          {result.completionReason && result.completionReason !== 'Quiz submitted' && (
+          {result.autoSubmitReason && result.autoSubmitReason !== 'Quiz submitted' && (
             <div className="warning-box">
-              <p>⚠️ Quiz was auto-submitted: {result.completionReason}</p>
+              <p>⚠️ Quiz was auto-submitted: {result.autoSubmitReason}</p>
               <p>Tab switches detected: {result.tabSwitches}</p>
             </div>
           )}
@@ -177,20 +223,34 @@ const QuizResult = () => {
           <p className="review-note">Review your answers and learn from explanations</p>
           
           <div className="review-questions">
-            {result.userAnswers.map((userAnswer, index) => {
-              // Since we don't have the full quiz data, we'll show a simplified review
+            {result.answers.map((userAnswer, index) => {
+              const question = quiz.questions[index];
+              const isCorrect = userAnswer !== null && userAnswer === question?.correctAnswer;
+              
               return (
-                <div key={index} className="review-question">
+                <div key={index} className={`review-question ${isCorrect ? 'correct' : userAnswer !== null ? 'incorrect' : 'skipped'}`}>
                   <div className="question-header">
                     <h3>Question {index + 1}</h3>
-                    <span className={`status-badge ${userAnswer !== null ? 'answered' : 'skipped'}`}>
-                      {userAnswer !== null ? 'Answered' : 'Skipped'}
+                    <span className={`status-badge ${userAnswer !== null ? (isCorrect ? 'correct' : 'incorrect') : 'skipped'}`}>
+                      {userAnswer !== null ? (isCorrect ? 'Correct' : 'Incorrect') : 'Skipped'}
                     </span>
                   </div>
                   
+                  {question && (
+                    <div className="question-text">{question.questionText}</div>
+                  )}
+                  
                   {userAnswer !== null && (
                     <div className="answer-review">
-                      <p><strong>Your Answer:</strong> Option {String.fromCharCode(65 + userAnswer)}</p>
+                      <p><strong>Your Answer:</strong> Option {String.fromCharCode(65 + userAnswer)} - {question?.options[userAnswer]}</p>
+                      {!isCorrect && (
+                        <p><strong>Correct Answer:</strong> Option {String.fromCharCode(65 + question.correctAnswer)} - {question?.options[question.correctAnswer]}</p>
+                      )}
+                      {question?.explanation && (
+                        <div className="explanation">
+                          <p><strong>Explanation:</strong> {question.explanation}</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

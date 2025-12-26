@@ -306,7 +306,7 @@ const QuizPlayer = () => {
       
       quiz.questions.forEach((question, index) => {
         if (userAnswers[index] !== null && 
-            question.options[userAnswers[index]] === question.correctAnswer) {
+            userAnswers[index] === question.correctAnswer) {
           correctAnswers++;
         }
       });
@@ -316,28 +316,29 @@ const QuizPlayer = () => {
       // Submit result
       const resultData = {
         quizId: quiz.quizId,
-        quizTitle: quiz.title,
         score,
         correctAnswers,
         totalQuestions,
-        userAnswers,
-        tabSwitches: tabSwitchCount,
-        completionReason: reason,
+        answers: userAnswers,
+        tabSwitchCount,
+        autoSubmitReason: reason,
         timeTaken: quiz.timer * 60 - timeRemaining
       };
       
-      await apiService.submitResult(resultData);
+      const savedResult = await apiService.submitResult(resultData);
       
       // Exit fullscreen if active
       if (fullscreenActive) {
         exitFullscreen();
       }
       
-      // Navigate to results page
-      navigate(`/student/result/${quiz.quizId}`, { 
+      // Navigate to results page using the result ID from the saved result
+      const resultId = savedResult.resultId || quiz.quizId; // fallback to quizId if resultId not available
+      navigate(`/student/result/${resultId}`, { 
         state: { 
           resultData,
-          quizTitle: quiz.title
+          quizTitle: quiz.title,
+          quizQuestions: quiz.questions // Include questions for detailed review
         } 
       });
     } catch (error) {
@@ -485,7 +486,7 @@ const QuizPlayer = () => {
               </div>
             )}
             <h2 className="question-text">
-              {currentQuestionIndex + 1}. {currentQuestion.question}
+              {currentQuestionIndex + 1}. {currentQuestion.questionText}
             </h2>
             {currentQuestion.points && (
               <span className="points-badge">{currentQuestion.points} points</span>
@@ -504,7 +505,7 @@ const QuizPlayer = () => {
             {currentQuestion.options.map((option, index) => (
               <motion.button
                 key={index}
-                className={`option ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}`}
+                className={`option-btn ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}`}
                 onClick={() => handleAnswerSelect(index)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

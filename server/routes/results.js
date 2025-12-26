@@ -9,7 +9,7 @@ const router = express.Router();
 // Submit quiz result
 router.post('/', authenticateToken, authorizeRole('student'), async (req, res) => {
   try {
-    const { quizId, score, correctAnswers, totalQuestions, answers, autoSubmitted, autoSubmitReason, tabSwitchCount } = req.body;
+    const { quizId, score, correctAnswers, totalQuestions, answers, autoSubmitted, autoSubmitReason, tabSwitchCount, timeTaken } = req.body;
     
     // Verify quiz exists
     const quiz = await Quiz.findOne({ quizId });
@@ -29,7 +29,8 @@ router.post('/', authenticateToken, authorizeRole('student'), async (req, res) =
       answers,
       autoSubmitted: autoSubmitted || false,
       autoSubmitReason: autoSubmitReason || null,
-      tabSwitchCount: tabSwitchCount || 0
+      tabSwitchCount: tabSwitchCount || 0,
+      timeTaken: timeTaken || null
     });
     
     await result.save();

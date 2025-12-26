@@ -119,6 +119,25 @@ npm run test-db
 npm run dev
 ```
 
+### Auto-activate (resume) MongoDB Atlas when site is visited
+
+If you deploy the frontend on Vercel (or any static host) and want the database cluster to be resumed automatically when users visit the site, the server exposes a small endpoint that will call the MongoDB Atlas Resume API.
+
+1. Set these environment variables on the server (for example via Vercel Environment Variables or your hosting provider):
+
+```
+ATLAS_PUBLIC_KEY=your_atlas_api_public_key
+ATLAS_PRIVATE_KEY=your_atlas_api_private_key
+ATLAS_GROUP_ID=your_atlas_project_id
+ATLAS_CLUSTER_NAME=your_cluster_name
+VITE_API_BASE_URL=https://your-server.example.com/api
+```
+
+2. Deploy the backend (server) so the endpoint `/api/activate-db` is reachable. The frontend call is non-blocking and will return early if the env vars are not configured.
+
+Security note: Do NOT put Atlas API keys in the frontend; they must remain server-side. The endpoint simply proxies a resume request to Atlas and returns the response.
+
+
 ### Frontend Setup
 
 ```bash

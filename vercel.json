@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["server/**", "api/**"]
+      }
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/((?!api\/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "env": {
+    "MONGODB_URI": "$MONGODB_URI",
+    "JWT_SECRET": "$JWT_SECRET",
+    "ATLAS_PUBLIC_KEY": "$ATLAS_PUBLIC_KEY",
+    "ATLAS_PRIVATE_KEY": "$ATLAS_PRIVATE_KEY",
+    "ATLAS_GROUP_ID": "$ATLAS_GROUP_ID",
+    "ATLAS_CLUSTER_NAME": "$ATLAS_CLUSTER_NAME"
+  }
+}

@@ -13,6 +13,7 @@ import QuizResult from './components/Student/QuizResult';
 import ResultPending from './components/Student/ResultPending';
 import Certificate from './components/Student/Certificate';
 import StudentProfile from './components/Student/StudentProfile';
+import DatabaseActivation from './components/DatabaseActivation';
 import './index.css';
 
 // Home redirect component
@@ -76,6 +77,7 @@ function App() {
     <Router>
       <AuthProvider>
         <div className="app">
+          <DatabaseActivation />
           <Routes>
             {/* Public Routes */}
             <Route path="/register" element={<Register />} />

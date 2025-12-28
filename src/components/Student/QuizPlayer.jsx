@@ -300,7 +300,7 @@ const QuizPlayer = () => {
       setQuizCompleted(true);
       backupService.stopBackup();
       
-      // Calculate score
+      // Calculate score with hint deductions
       let correctAnswers = 0;
       const totalQuestions = quiz.questions.length;
       
@@ -311,12 +311,37 @@ const QuizPlayer = () => {
         }
       });
       
-      const score = Math.round((correctAnswers / totalQuestions) * 100);
+      // Calculate score based on question points if available, otherwise use equal distribution
+      let totalPossiblePoints = 0;
+      let earnedPoints = 0;
+      
+      quiz.questions.forEach((question, index) => {
+        // Use question-specific points if available, otherwise default to 1 point per question
+        const questionPoints = question.points || 1;
+        totalPossiblePoints += questionPoints;
+        
+        if (userAnswers[index] !== null && userAnswers[index] === question.correctAnswer) {
+          earnedPoints += questionPoints;
+        }
+      });
+      
+      // Calculate base score
+      let baseScore = totalPossiblePoints > 0 ? Math.round((earnedPoints / totalPossiblePoints) * 100) : 0;
+      
+      // Calculate hint deductions
+      const hintsUsedCount = usedHints.length;
+      const pointsDeductedForHints = hintsUsedCount * 2; // 2 points deducted per hint used
+      
+      // Apply hint deductions to score (but don't let it go below 0)
+      let finalScore = Math.max(0, baseScore - pointsDeductedForHints);
       
       // Submit result
       const resultData = {
         quizId: quiz.quizId,
-        score,
+        score: finalScore, // Use final score after hint deductions
+        baseScore,
+        hintsUsed: hintsUsedCount,
+        pointsDeductedForHints,
         correctAnswers,
         totalQuestions,
         answers: userAnswers,

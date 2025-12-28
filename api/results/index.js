@@ -67,6 +67,9 @@ export default async function handler(req, res) {
         quizId,
         userId: decoded.userId,
         score,
+        baseScore: req.body.baseScore,
+        hintsUsed: req.body.hintsUsed || 0,
+        pointsDeductedForHints: req.body.pointsDeductedForHints || 0,
         totalQuestions,
         correctAnswers,
         answers: answers || []

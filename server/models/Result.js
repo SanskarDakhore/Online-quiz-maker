@@ -48,6 +48,14 @@ const resultSchema = new mongoose.Schema({
   timeTaken: {
     type: Number,
     default: null
+  },
+  hintsUsed: {
+    type: Number,
+    default: 0
+  },
+  pointsDeductedForHints: {
+    type: Number,
+    default: 0
   }
 });
 

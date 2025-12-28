@@ -395,7 +395,10 @@ class ApiService {
         return {
           ...resultData,
           resultId: 'mock-result-' + Date.now(),
-          submittedAt: new Date().toISOString()
+          submittedAt: new Date().toISOString(),
+          baseScore: resultData.baseScore || resultData.score,
+          hintsUsed: resultData.hintsUsed || 0,
+          pointsDeductedForHints: resultData.pointsDeductedForHints || 0
         };
       }
       throw error;
@@ -413,6 +416,9 @@ class ApiService {
             resultId: 'mock-result-1',
             quizId: 'mock-quiz-1',
             score: 80,
+            baseScore: 80,
+            hintsUsed: 0,
+            pointsDeductedForHints: 0,
             totalQuestions: 5,
             correctAnswers: 4,
             submittedAt: new Date().toISOString()
@@ -433,6 +439,9 @@ class ApiService {
           resultId: resultId || 'mock-result-1',
           quizId: 'mock-quiz-1',
           score: 80,
+          baseScore: 80,
+          hintsUsed: 0,
+          pointsDeductedForHints: 0,
           totalQuestions: 5,
           correctAnswers: 4,
           submittedAt: new Date().toISOString()
@@ -453,6 +462,9 @@ class ApiService {
             resultId: 'mock-result-1',
             quizId: quizId || 'mock-quiz-1',
             score: 80,
+            baseScore: 80,
+            hintsUsed: 0,
+            pointsDeductedForHints: 0,
             totalQuestions: 5,
             correctAnswers: 4,
             submittedAt: new Date().toISOString()

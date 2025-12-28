@@ -182,6 +182,14 @@ const QuizResult = () => {
               👤 View Profile
             </Link>
           </div>
+          
+          {/* Hint Usage Information */}
+          {result.hintsUsed !== undefined && result.hintsUsed > 0 && (
+            <div className="hints-info">
+              <p>💡 Hints Used: {result.hintsUsed} (Points deducted: {result.pointsDeductedForHints || result.hintsUsed * 2})</p>
+              <p>Final Score: {result.score}% (Base Score: {result.baseScore || Math.round(result.score + (result.pointsDeductedForHints || result.hintsUsed * 2))}%)</p>
+            </div>
+          )}
         </motion.div>
 
         {/* Performance Summary */}

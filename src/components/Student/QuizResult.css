@@ -351,6 +351,21 @@
   flex-wrap: wrap;
 }
 
+.hints-info {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid var(--secondary);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.hints-info p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
 /* Question Review Styles */
 .review-question {
   padding: 1.5rem;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import apiService from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
@@ -7,9 +7,11 @@ import './StudentQuizzes.css';
 
 const StudentQuizzes = () => {
   const { currentUser, logout, userRole } = useAuth();
+  const location = useLocation();
   const [quizzes, setQuizzes] = useState([]);
   const [filteredQuizzes, setFilteredQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterDifficulty, setFilterDifficulty] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,6 +38,7 @@ const StudentQuizzes = () => {
       setFilteredQuizzes(quizzesData);
     } catch (error) {
       console.error('Error fetching quizzes:', error);
+      setError('Failed to load quizzes');
     } finally {
       setLoading(false);
     }
@@ -65,22 +68,137 @@ const StudentQuizzes = () => {
   const categories = ['All', ...new Set(quizzes.map(q => q.category))];
   const difficulties = ['All', 'Easy', 'Medium', 'Hard'];
 
-  return (
-    <div className="student-quizzes-container">
-      <div className="student-header glass-card">
-        <div>
-          <h1>Available Quizzes 📚</h1>
-          <p>Choose a quiz and test your knowledge</p>
-        </div>
-        <div className="header-actions">
-          <Link to="/student/profile" className="btn btn-secondary">
-            👤 Profile
-          </Link>
-          <button onClick={logout} className="btn btn-danger">
+  if (loading) {
+    return (
+      <div className="teacher-dashboard">
+        <div className="sidebar glass-card">
+          <div className="sidebar-header">
+            <h2>QuizMaster</h2>
+            <div className="user-role">Student</div>
+          </div>
+          <nav className="sidebar-nav">
+            <div className="nav-item active">
+              <span className="nav-icon">📚</span>
+              Available Quizzes
+            </div>
+            <div className="nav-item">
+              <span className="nav-icon">👤</span>
+              Profile
+            </div>
+          </nav>
+          <button className="btn btn-danger logout-btn" disabled>
             🚪 Logout
           </button>
         </div>
+        <div className="dashboard-main">
+          <div className="dashboard-header glass-card">
+            <div>
+              <h1>Available Quizzes 📚</h1>
+              <p>Choose a quiz and test your knowledge</p>
+            </div>
+            <div className="header-actions">
+              <button className="btn btn-danger" disabled>
+                🚪 Logout
+              </button>
+            </div>
+          </div>
+          <div className="flex-center" style={{ minHeight: '400px' }}>
+            <div className="spinner"></div>
+          </div>
+        </div>
       </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="teacher-dashboard">
+        <div className="sidebar glass-card">
+          <div className="sidebar-header">
+            <h2>QuizMaster</h2>
+            <div className="user-role">Student</div>
+          </div>
+          <nav className="sidebar-nav">
+            <Link to="/student/quizzes" className={`nav-item ${location.pathname === '/student/quizzes' ? 'active' : ''}`}>
+              <span className="nav-icon">📚</span>
+              Available Quizzes
+            </Link>
+            <Link to="/student/profile" className={`nav-item ${location.pathname === '/student/profile' ? 'active' : ''}`}>
+              <span className="nav-icon">👤</span>
+              Profile
+            </Link>
+          </nav>
+          <button onClick={logout} className="btn btn-danger logout-btn">
+            🚪 Logout
+          </button>
+        </div>
+        <div className="dashboard-main">
+          <div className="dashboard-header glass-card">
+            <div>
+              <h1>Available Quizzes 📚</h1>
+              <p>Choose a quiz and test your knowledge</p>
+            </div>
+            <div className="header-actions">
+              <button onClick={logout} className="btn btn-danger">
+                🚪 Logout
+              </button>
+            </div>
+          </div>
+          <div className="error-container">
+            <div className="error-message">
+              <h3>Error Loading Quizzes</h3>
+              <p>{error}</p>
+              <button onClick={() => {
+                setError(null);
+                fetchQuizzes();
+              }} className="btn btn-primary">
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="teacher-dashboard">
+      {/* Sidebar */}
+      <div className="sidebar glass-card">
+        <div className="sidebar-header">
+          <h2>QuizMaster</h2>
+          <div className="user-role">Student</div>
+        </div>
+        
+        <nav className="sidebar-nav">
+          <Link to="/student/quizzes" className={`nav-item ${location.pathname === '/student/quizzes' ? 'active' : ''}`}>
+            <span className="nav-icon">📚</span>
+            Available Quizzes
+          </Link>
+          <Link to="/student/profile" className={`nav-item ${location.pathname === '/student/profile' ? 'active' : ''}`}>
+            <span className="nav-icon">👤</span>
+            Profile
+          </Link>
+        </nav>
+        
+        <button onClick={logout} className="btn btn-danger logout-btn">
+          🚪 Logout
+        </button>
+      </div>
+      
+      {/* Main Content */}
+      <div className="dashboard-main">
+        <div className="dashboard-header glass-card">
+          <div>
+            <h1>Available Quizzes 📚</h1>
+            <p>Choose a quiz and test your knowledge</p>
+          </div>
+          <div className="header-actions">
+            <button onClick={logout} className="btn btn-danger">
+              🚪 Logout
+            </button>
+          </div>
+        </div>
 
       <motion.div 
         className="filters-section glass-card"
@@ -163,6 +281,7 @@ const StudentQuizzes = () => {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 };

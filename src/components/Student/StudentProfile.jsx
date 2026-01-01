@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import apiService from '../../services/api';
@@ -7,6 +7,7 @@ import './StudentProfile.css';
 
 const StudentProfile = () => {
   const { currentUser, logout } = useAuth();
+  const location = useLocation();
   const [userData, setUserData] = useState(null);
   const [results, setResults] = useState([]);
   const [stats, setStats] = useState({
@@ -16,6 +17,7 @@ const StudentProfile = () => {
     badges: []
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchProfileData();
@@ -54,6 +56,7 @@ const StudentProfile = () => {
       });
     } catch (error) {
       console.error('Error fetching profile data:', error);
+      setError('Failed to load profile data');
     } finally {
       setLoading(false);
     }
@@ -75,31 +78,135 @@ const StudentProfile = () => {
 
   if (loading) {
     return (
-      <div className="student-profile-container flex-center">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="student-profile-container">
-      <div className="profile-header glass-card">
-        <div className="profile-info">
-          <div className="avatar">{userData?.name?.charAt(0).toUpperCase()}</div>
-          <div>
-            <h1>{userData?.name}</h1>
-            <p>{userData?.email}</p>
+      <div className="teacher-dashboard">
+        <div className="sidebar glass-card">
+          <div className="sidebar-header">
+            <h2>QuizMaster</h2>
+            <div className="user-role">Student</div>
           </div>
-        </div>
-        <div className="header-actions">
-          <Link to="/student/quizzes" className="btn btn-primary">
-            📚 Browse Quizzes
-          </Link>
-          <button onClick={logout} className="btn btn-danger">
+          <nav className="sidebar-nav">
+            <div className="nav-item active">
+              <span className="nav-icon">📚</span>
+              Available Quizzes
+            </div>
+            <div className="nav-item">
+              <span className="nav-icon">👤</span>
+              Profile
+            </div>
+          </nav>
+          <button className="btn btn-danger logout-btn" disabled>
             🚪 Logout
           </button>
         </div>
+        <div className="dashboard-main">
+          <div className="dashboard-header glass-card">
+            <div>
+              <h1>Student Profile 👤</h1>
+              <p>Loading your profile data</p>
+            </div>
+            <div className="header-actions">
+              <button className="btn btn-danger" disabled>
+                🚪 Logout
+              </button>
+            </div>
+          </div>
+          <div className="flex-center" style={{ minHeight: '400px' }}>
+            <div className="spinner"></div>
+          </div>
+        </div>
       </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="teacher-dashboard">
+        <div className="sidebar glass-card">
+          <div className="sidebar-header">
+            <h2>QuizMaster</h2>
+            <div className="user-role">Student</div>
+          </div>
+          <nav className="sidebar-nav">
+            <Link to="/student/quizzes" className={`nav-item ${location.pathname === '/student/quizzes' ? 'active' : ''}`}>
+              <span className="nav-icon">📚</span>
+              Available Quizzes
+            </Link>
+            <Link to="/student/profile" className={`nav-item ${location.pathname === '/student/profile' ? 'active' : ''}`}>
+              <span className="nav-icon">👤</span>
+              Profile
+            </Link>
+          </nav>
+          <button onClick={logout} className="btn btn-danger logout-btn">
+            🚪 Logout
+          </button>
+        </div>
+        <div className="dashboard-main">
+          <div className="dashboard-header glass-card">
+            <div>
+              <h1>Student Profile 👤</h1>
+              <p>Your profile information</p>
+            </div>
+            <div className="header-actions">
+              <button onClick={logout} className="btn btn-danger">
+                🚪 Logout
+              </button>
+            </div>
+          </div>
+          <div className="error-container">
+            <div className="error-message">
+              <h3>Error Loading Profile</h3>
+              <p>{error}</p>
+              <button onClick={() => {
+                setError(null);
+                fetchProfileData();
+              }} className="btn btn-primary">
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="teacher-dashboard">
+      {/* Sidebar */}
+      <div className="sidebar glass-card">
+        <div className="sidebar-header">
+          <h2>QuizMaster</h2>
+          <div className="user-role">Student</div>
+        </div>
+        
+        <nav className="sidebar-nav">
+          <Link to="/student/quizzes" className={`nav-item ${location.pathname === '/student/quizzes' ? 'active' : ''}`}>
+            <span className="nav-icon">📚</span>
+            Available Quizzes
+          </Link>
+          <Link to="/student/profile" className={`nav-item ${location.pathname === '/student/profile' ? 'active' : ''}`}>
+            <span className="nav-icon">👤</span>
+            Profile
+          </Link>
+        </nav>
+        
+        <button onClick={logout} className="btn btn-danger logout-btn">
+          🚪 Logout
+        </button>
+      </div>
+      
+      {/* Main Content */}
+      <div className="dashboard-main">
+        <div className="dashboard-header glass-card">
+          <div>
+            <h1>Student Profile 👤</h1>
+            <p>Your profile information</p>
+          </div>
+          <div className="header-actions">
+            <button onClick={logout} className="btn btn-danger">
+              🚪 Logout
+            </button>
+          </div>
+        </div>
 
       {/* Stats Cards */}
       <div className="stats-grid">
@@ -107,10 +214,10 @@ const StudentProfile = () => {
           className="stat-card glass-card"
           whileHover={{ scale: 1.05 }}
         >
-          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+          <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
             📝
           </div>
-          <div className="stat-info">
+          <div className="stat-card-content">
             <h3>{stats.totalAttempts}</h3>
             <p>Quizzes Attempted</p>
           </div>
@@ -120,10 +227,10 @@ const StudentProfile = () => {
           className="stat-card glass-card"
           whileHover={{ scale: 1.05 }}
         >
-          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+          <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
             ⭐
           </div>
-          <div className="stat-info">
+          <div className="stat-card-content">
             <h3>{stats.averageScore}%</h3>
             <p>Average Score</p>
           </div>
@@ -133,10 +240,10 @@ const StudentProfile = () => {
           className="stat-card glass-card"
           whileHover={{ scale: 1.05 }}
         >
-          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+          <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
             💯
           </div>
-          <div className="stat-info">
+          <div className="stat-card-content">
             <h3>{stats.perfectScores}</h3>
             <p>Perfect Scores</p>
           </div>
@@ -146,10 +253,10 @@ const StudentProfile = () => {
           className="stat-card glass-card"
           whileHover={{ scale: 1.05 }}
         >
-          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #ec4899, #be185d)' }}>
+          <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #ec4899, #be185d)' }}>
             🏅
           </div>
-          <div className="stat-info">
+          <div className="stat-card-content">
             <h3>{stats.badges.length}</h3>
             <p>Badges Earned</p>
           </div>
@@ -199,7 +306,7 @@ const StudentProfile = () => {
                 whileHover={{ x: 5 }}
               >
                 <div className="attempt-info">
-                  <h3>{result.quizTitle || 'Untitled Quiz'}</h3>
+                  <h4>{result.quizTitle || 'Untitled Quiz'}</h4>
                   <p>Score: <strong>{result.score}%</strong></p>
                   <p className="timestamp">
                     {new Date(result.timestamp).toLocaleDateString()} at 
@@ -221,6 +328,7 @@ const StudentProfile = () => {
           </Link>
         )}
       </motion.div>
+      </div>
     </div>
   );
 };

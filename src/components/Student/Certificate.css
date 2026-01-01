@@ -27,7 +27,7 @@
   left: 0;
   right: 0;
   height: 10px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+  background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
 }
 
 .certificate-header {
@@ -57,7 +57,7 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin: 2rem 0;
-  color: #f59e0b;
+  color: var(--secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -136,12 +136,12 @@
 .certificate-type {
   display: inline-block;
   padding: 0.75rem 1.5rem;
-  border: 2px solid #f59e0b;
+  border: 2px solid var(--secondary);
   border-radius: 50px;
   font-weight: 600;
   font-size: 1.125rem;
   margin: 2rem 0;
-  color: #f59e0b;
+  color: var(--secondary);
 }
 
 .certificate-footer {

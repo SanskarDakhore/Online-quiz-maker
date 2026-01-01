@@ -5,17 +5,17 @@
 }
 
 :root {
-  /* Color Palette - Soft Blues & Purples */
-  --primary: #6366f1;
-  --primary-light: #818cf8;
-  --primary-dark: #4f46e5;
-  --secondary: #8b5cf6;
-  --secondary-light: #a78bfa;
+  /* Color Palette - Modern Teal & Amber */
+  --primary: #0d9488;
+  --primary-light: #5fddd0;
+  --primary-dark: #087265;
+  --secondary: #f59e0b;
+  --secondary-light: #fbbf24;
   --accent: #ec4899;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
-  --info: #3b82f6;
+  --info: #0ea5e9;
   
   /* Neutrals */
   --bg-primary: #0f172a;
@@ -28,7 +28,7 @@
   /* Glass-morphism */
   --glass-bg: rgba(255, 255, 255, 0.1);
   --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --glass-shadow: 0 8px 32px 0 rgba(13, 148, 136, 0.15);
   
   /* Dark Mode Colors (will be toggled) */
   --dark-bg-primary: #0f172a;
@@ -58,7 +58,7 @@ body.light-mode {
   --text-muted: #64748b;
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
 }
 
 code {
@@ -116,7 +116,7 @@ code {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 10px 25px rgba(13, 148, 136, 0.4);
 }
 
 .btn-secondary {
@@ -180,7 +180,7 @@ code {
 .input-group select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
 }
 
 .input-error {

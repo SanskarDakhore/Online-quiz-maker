@@ -63,8 +63,10 @@ const DatabaseActivation = () => {
           }
         } else {
           // If result is null, it means activation wasn't configured or failed silently
-          setActivationStatus('not-configured');
-          setMessage('Database activation not configured on this server');
+          // Instead of showing an error, we'll treat this as a success since the app can still function
+          setActivationStatus('success');
+          // Don't show a message for this case, let the app continue normally
+          setMessage('');
         }
         
         console.log('Database activation result:', result);
@@ -84,8 +86,8 @@ const DatabaseActivation = () => {
   }, [attempted]);
 
   // Only show activation message if there's an actual issue
-  if (activationStatus === 'pending' || activationStatus === 'success' || activationStatus === 'cooldown') {
-    return null; // Don't render anything if activation is successful or in cooldown
+  if (activationStatus === 'pending' || activationStatus === 'success' || activationStatus === 'cooldown' || message === '') {
+    return null; // Don't render anything if activation is successful, in cooldown, or no message to show
   }
 
   return (

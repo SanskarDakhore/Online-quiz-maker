@@ -485,6 +485,11 @@ class ApiService {
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
         console.warn('activateDb failed:', response.status, err);
+        // If the error is due to missing configuration, return null
+        // Otherwise, we might want to handle other errors differently
+        if (response.status === 400 && err.error && err.error.includes('Missing Atlas API environment variables')) {
+          return null; // Configuration issue - return null to indicate not configured
+        }
         return null;
       }
       return await response.json();

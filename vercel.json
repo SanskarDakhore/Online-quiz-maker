@@ -15,6 +15,14 @@
       "destination": "/api/$1"
     },
     {
+      "source": "/teacher/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/student/(.*)",
+      "destination": "/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

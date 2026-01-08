@@ -77,16 +77,16 @@ const StudentQuizzes = () => {
             <div className="user-role">Student</div>
           </div>
           <nav className="sidebar-nav">
-            <div className="nav-item active">
+            <Link to="/student/quizzes" className={`nav-item ${location.pathname === '/student/quizzes' ? 'active' : ''}`}>
               <span className="nav-icon">📚</span>
               Available Quizzes
-            </div>
-            <div className="nav-item">
+            </Link>
+            <Link to="/student/profile" className={`nav-item ${location.pathname === '/student/profile' ? 'active' : ''}`}>
               <span className="nav-icon">👤</span>
               Profile
-            </div>
+            </Link>
           </nav>
-          <button className="btn btn-danger logout-btn" disabled>
+          <button onClick={logout} className="btn btn-danger logout-btn">
             🚪 Logout
           </button>
         </div>
@@ -97,7 +97,7 @@ const StudentQuizzes = () => {
               <p>Choose a quiz and test your knowledge</p>
             </div>
             <div className="header-actions">
-              <button className="btn btn-danger" disabled>
+              <button onClick={logout} className="btn btn-danger">
                 🚪 Logout
               </button>
             </div>

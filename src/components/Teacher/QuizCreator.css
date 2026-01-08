@@ -1,6 +1,5 @@
 .quiz-creator-container {
   min-height: 100vh;
-  padding: 2rem;
   background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
 }
 

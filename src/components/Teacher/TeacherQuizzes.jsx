@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import apiService from '../../services/api';
@@ -8,8 +8,10 @@ import './TeacherQuizzes.css';
 const TeacherQuizzes = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // all, published, unpublished
 
   useEffect(() => {
@@ -18,18 +20,19 @@ const TeacherQuizzes = () => {
 
   const fetchQuizzes = async () => {
     try {
+      setLoading(true);
       const quizzesData = await apiService.getMyQuizzes();
       
       // Sort quizzes by creation date (newest first)
       quizzesData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setQuizzes(quizzesData);
+      setError(null); // Clear any previous errors
     } catch (error) {
       console.error('Error fetching quizzes:', error);
       if (error.message.includes('Session expired')) {
-        alert('Your session has expired. Please log in again.');
         navigate('/login');
       } else {
-        alert('Failed to fetch quizzes: ' + error.message);
+        setError('Failed to load quizzes: ' + error.message);
       }
     } finally {
       setLoading(false);
@@ -82,25 +85,103 @@ const TeacherQuizzes = () => {
     return true;
   });
 
-  return (
-    <div className="teacher-quizzes-container">
-      <div className="quizzes-header glass-card">
-        <div>
-          <h1>My Quizzes 📝</h1>
-          <p>Manage all your created quizzes</p>
-        </div>
-        <div className="header-actions">
-          <Link to="/teacher/dashboard" className="btn btn-secondary">
-            📊 Dashboard
-          </Link>
-          <Link to="/teacher/create-quiz" className="btn btn-primary">
-            ➕ Create New Quiz
-          </Link>
-          <button onClick={logout} className="btn btn-danger">
+  if (error) {
+    return (
+      <div className="teacher-dashboard">
+        <div className="sidebar glass-card">
+          <div className="sidebar-header">
+            <h2>QuizMaster</h2>
+            <div className="user-role">Teacher</div>
+          </div>
+          <nav className="sidebar-nav">
+            <Link to="/teacher/dashboard" className={`nav-item ${location.pathname === '/teacher/dashboard' ? 'active' : ''}`}>
+              <span className="nav-icon">📊</span>
+              Dashboard
+            </Link>
+            <Link to="/teacher/quizzes" className={`nav-item ${location.pathname === '/teacher/quizzes' ? 'active' : ''}`}>
+              <span className="nav-icon">📋</span>
+              My Quizzes
+            </Link>
+            <Link to="/teacher/create-quiz" className={`nav-item ${location.pathname === '/teacher/create-quiz' ? 'active' : ''}`}>
+              <span className="nav-icon">➕</span>
+              Create Quiz
+            </Link>
+          </nav>
+          <button onClick={logout} className="btn btn-danger logout-btn">
             🚪 Logout
           </button>
         </div>
+        <div className="dashboard-main">
+          <div className="dashboard-header glass-card">
+            <div>
+              <h1>My Quizzes 📝</h1>
+              <p>Manage all your created quizzes</p>
+            </div>
+            <div className="header-actions">
+              <button onClick={logout} className="btn btn-danger">
+                🚪 Logout
+              </button>
+            </div>
+          </div>
+          <div className="error-container">
+            <div className="error-message">
+              <h3>Error Loading Quizzes</h3>
+              <p>{error}</p>
+              <button onClick={() => {
+                setError(null);
+                fetchQuizzes();
+              }} className="btn btn-primary">
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="teacher-dashboard">
+      {/* Sidebar */}
+      <div className="sidebar glass-card">
+        <div className="sidebar-header">
+          <h2>QuizMaster</h2>
+          <div className="user-role">Teacher</div>
+        </div>
+        
+        <nav className="sidebar-nav">
+          <Link to="/teacher/dashboard" className={`nav-item ${location.pathname === '/teacher/dashboard' ? 'active' : ''}`}>
+            <span className="nav-icon">📊</span>
+            Dashboard
+          </Link>
+          <Link to="/teacher/quizzes" className={`nav-item ${location.pathname === '/teacher/quizzes' ? 'active' : ''}`}>
+            <span className="nav-icon">📋</span>
+            My Quizzes
+          </Link>
+          <Link to="/teacher/create-quiz" className={`nav-item ${location.pathname === '/teacher/create-quiz' ? 'active' : ''}`}>
+            <span className="nav-icon">➕</span>
+            Create Quiz
+          </Link>
+        </nav>
+        
+        <button onClick={logout} className="btn btn-danger logout-btn">
+          🚪 Logout
+        </button>
+      </div>
+      
+      {/* Main Content */}
+      <div className="dashboard-main">
+        <div className="dashboard-header glass-card">
+          <div>
+            <h1>My Quizzes 📝</h1>
+            <p>Manage all your created quizzes</p>
+          </div>
+          <div className="header-actions">
+            <button onClick={logout} className="btn btn-danger">
+              🚪 Logout
+            </button>
+          </div>
+        </div>
 
       {/* Filters */}
       <motion.div 
@@ -231,6 +312,7 @@ const TeacherQuizzes = () => {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 };

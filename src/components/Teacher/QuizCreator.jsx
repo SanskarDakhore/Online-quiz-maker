@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiService from '../../services/api';
 import './QuizCreator.css';
 
 const QuizCreator = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { quizId } = useParams();
   const [loading, setLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -231,18 +232,47 @@ const QuizCreator = () => {
   }
 
   return (
-    <div className="quiz-creator-container">
-      <div className="creator-header">
-        <h1>{isEditMode ? '✏️ Edit Quiz' : '➕ Create New Quiz'}</h1>
-        <div className="header-actions">
-          <button 
-            onClick={() => navigate('/teacher/quizzes')} 
-            className="btn btn-secondary"
-          >
-            ← Back to Quizzes
-          </button>
+    <div className="teacher-dashboard">
+      {/* Sidebar */}
+      <div className="sidebar glass-card">
+        <div className="sidebar-header">
+          <h2>QuizMaster</h2>
+          <div className="user-role">Teacher</div>
         </div>
+        
+        <nav className="sidebar-nav">
+          <Link to="/teacher/dashboard" className={`nav-item ${location.pathname === '/teacher/dashboard' ? 'active' : ''}`}>
+            <span className="nav-icon">📊</span>
+            Dashboard
+          </Link>
+          <Link to="/teacher/quizzes" className={`nav-item ${location.pathname === '/teacher/quizzes' ? 'active' : ''}`}>
+            <span className="nav-icon">📋</span>
+            My Quizzes
+          </Link>
+          <Link to="/teacher/create-quiz" className={`nav-item ${location.pathname === '/teacher/create-quiz' ? 'active' : ''}`}>
+            <span className="nav-icon">➕</span>
+            Create Quiz
+          </Link>
+        </nav>
+        
+        <button onClick={logout} className="btn btn-danger logout-btn">
+          🚪 Logout
+        </button>
       </div>
+      
+      {/* Main Content */}
+      <div className="dashboard-main">
+        <div className="dashboard-header glass-card">
+          <div>
+            <h1>{isEditMode ? '✏️ Edit Quiz' : '➕ Create New Quiz'}</h1>
+            <p>Create and customize your quiz</p>
+          </div>
+          <div className="header-actions">
+            <button onClick={logout} className="btn btn-danger">
+              🚪 Logout
+            </button>
+          </div>
+        </div>
 
       {/* Quiz Info Form */}
       <motion.div 
@@ -614,6 +644,7 @@ const QuizCreator = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 };

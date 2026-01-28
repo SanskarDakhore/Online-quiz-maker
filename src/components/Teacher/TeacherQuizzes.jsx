@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import apiService from '../../services/api';
-import './TeacherQuizzes.css';
+import '../../bootstrap-theme.css';
 
 const TeacherQuizzes = () => {
   const { currentUser, logout } = useAuth();
@@ -87,52 +87,61 @@ const TeacherQuizzes = () => {
 
   if (error) {
     return (
-      <div className="teacher-dashboard">
-        <div className="sidebar glass-card">
-          <div className="sidebar-header">
-            <h2>QuizMaster</h2>
-            <div className="user-role">Teacher</div>
-          </div>
-          <nav className="sidebar-nav">
-            <Link to="/teacher/dashboard" className={`nav-item ${location.pathname === '/teacher/dashboard' ? 'active' : ''}`}>
-              <span className="nav-icon">📊</span>
-              Dashboard
-            </Link>
-            <Link to="/teacher/quizzes" className={`nav-item ${location.pathname === '/teacher/quizzes' ? 'active' : ''}`}>
-              <span className="nav-icon">📋</span>
-              My Quizzes
-            </Link>
-            <Link to="/teacher/create-quiz" className={`nav-item ${location.pathname === '/teacher/create-quiz' ? 'active' : ''}`}>
-              <span className="nav-icon">➕</span>
-              Create Quiz
-            </Link>
-          </nav>
-          <button onClick={logout} className="btn btn-danger logout-btn">
-            🚪 Logout
-          </button>
-        </div>
-        <div className="dashboard-main">
-          <div className="dashboard-header glass-card">
-            <div>
-              <h1>My Quizzes 📝</h1>
-              <p>Manage all your created quizzes</p>
+      <div className="container-fluid p-0">
+        <div className="row g-0">
+          {/* Sidebar */}
+          <div className="col-md-3 col-lg-2 sidebar-custom p-3 min-vh-100">
+            <div className="mb-4 text-center">
+              <h3 className="gradient-text mb-1">QuizMaster</h3>
+              <small className="text-muted">Teacher</small>
             </div>
-            <div className="header-actions">
-              <button onClick={logout} className="btn btn-danger">
-                🚪 Logout
-              </button>
-            </div>
+            <nav className="nav flex-column mb-4">
+              <Link to="/teacher/dashboard" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/dashboard' ? 'active bg-primary' : ''}`}>
+                <i className="bi bi-speedometer2 me-2"></i> Dashboard
+              </Link>
+              <Link to="/teacher/quizzes" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/quizzes' ? 'active bg-primary' : ''}`}>
+                <i className="bi bi-journal-text me-2"></i> My Quizzes
+              </Link>
+              <Link to="/teacher/create-quiz" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/create-quiz' ? 'active bg-primary' : ''}`}>
+                <i className="bi bi-plus-circle me-2"></i> Create Quiz
+              </Link>
+            </nav>
+            <button onClick={logout} className="btn btn-danger w-100">
+              <i className="bi bi-door-open me-2"></i> Logout
+            </button>
           </div>
-          <div className="error-container">
-            <div className="error-message">
-              <h3>Error Loading Quizzes</h3>
-              <p>{error}</p>
-              <button onClick={() => {
-                setError(null);
-                fetchQuizzes();
-              }} className="btn btn-primary">
-                Retry
-              </button>
+          
+          {/* Main Content */}
+          <div className="col-md-9 col-lg-10">
+            <div className="p-4">
+              <div className="card card-glass mb-4">
+                <div className="card-body d-flex justify-content-between align-items-center">
+                  <div>
+                    <h1 className="gradient-text mb-1">My Quizzes <i className="bi bi-journal-text"></i></h1>
+                    <p className="mb-0">Manage all your created quizzes</p>
+                  </div>
+                  <button onClick={logout} className="btn btn-danger">
+                    <i className="bi bi-door-open me-1"></i> Logout
+                  </button>
+                </div>
+              </div>
+              
+              <div className="row justify-content-center">
+                <div className="col-md-6">
+                  <div className="card card-glass p-4">
+                    <h3 className="text-center mb-3">Error Loading Quizzes</h3>
+                    <p className="text-center text-muted">{error}</p>
+                    <div className="text-center">
+                      <button onClick={() => {
+                        setError(null);
+                        fetchQuizzes();
+                      }} className="btn btn-gradient">
+                        <i className="bi bi-arrow-repeat me-2"></i>Retry
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -141,177 +150,175 @@ const TeacherQuizzes = () => {
   }
 
   return (
-    <div className="teacher-dashboard">
-      {/* Sidebar */}
-      <div className="sidebar glass-card">
-        <div className="sidebar-header">
-          <h2>QuizMaster</h2>
-          <div className="user-role">Teacher</div>
+    <div className="container-fluid p-0">
+      <div className="row g-0">
+        {/* Sidebar */}
+        <div className="col-md-3 col-lg-2 sidebar-custom p-3 min-vh-100">
+          <div className="mb-4 text-center">
+            <h3 className="gradient-text mb-1">QuizMaster</h3>
+            <small className="text-muted">Teacher</small>
+          </div>
+          
+          <nav className="nav flex-column mb-4">
+            <Link to="/teacher/dashboard" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/dashboard' ? 'active bg-primary' : ''}`}>
+              <i className="bi bi-speedometer2 me-2"></i> Dashboard
+            </Link>
+            <Link to="/teacher/quizzes" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/quizzes' ? 'active bg-primary' : ''}`}>
+              <i className="bi bi-journal-text me-2"></i> My Quizzes
+            </Link>
+            <Link to="/teacher/create-quiz" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/create-quiz' ? 'active bg-primary' : ''}`}>
+              <i className="bi bi-plus-circle me-2"></i> Create Quiz
+            </Link>
+          </nav>
+          
+          <button onClick={logout} className="btn btn-danger w-100">
+            <i className="bi bi-door-open me-2"></i> Logout
+          </button>
         </div>
         
-        <nav className="sidebar-nav">
-          <Link to="/teacher/dashboard" className={`nav-item ${location.pathname === '/teacher/dashboard' ? 'active' : ''}`}>
-            <span className="nav-icon">📊</span>
-            Dashboard
-          </Link>
-          <Link to="/teacher/quizzes" className={`nav-item ${location.pathname === '/teacher/quizzes' ? 'active' : ''}`}>
-            <span className="nav-icon">📋</span>
-            My Quizzes
-          </Link>
-          <Link to="/teacher/create-quiz" className={`nav-item ${location.pathname === '/teacher/create-quiz' ? 'active' : ''}`}>
-            <span className="nav-icon">➕</span>
-            Create Quiz
-          </Link>
-        </nav>
-        
-        <button onClick={logout} className="btn btn-danger logout-btn">
-          🚪 Logout
-        </button>
-      </div>
-      
-      {/* Main Content */}
-      <div className="dashboard-main">
-        <div className="dashboard-header glass-card">
-          <div>
-            <h1>My Quizzes 📝</h1>
-            <p>Manage all your created quizzes</p>
-          </div>
-          <div className="header-actions">
-            <button onClick={logout} className="btn btn-danger">
-              🚪 Logout
-            </button>
-          </div>
-        </div>
+        {/* Main Content */}
+        <div className="col-md-9 col-lg-10">
+          <div className="p-4">
+            <div className="card card-glass mb-4">
+              <div className="card-body d-flex justify-content-between align-items-center">
+                <div>
+                  <h1 className="gradient-text mb-1">My Quizzes <i className="bi bi-journal-text"></i></h1>
+                  <p className="mb-0">Manage all your created quizzes</p>
+                </div>
+                <button onClick={logout} className="btn btn-danger">
+                  <i className="bi bi-door-open me-1"></i> Logout
+                </button>
+              </div>
+            </div>
 
-      {/* Filters */}
-      <motion.div 
-        className="filters-bar glass-card"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="filter-tabs">
-          <button 
-            className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
-            onClick={() => setFilter('all')}
-          >
-            All ({quizzes.length})
-          </button>
-          <button 
-            className={`filter-tab ${filter === 'published' ? 'active' : ''}`}
-            onClick={() => setFilter('published')}
-          >
-            Published ({quizzes.filter(q => q.published).length})
-          </button>
-          <button 
-            className={`filter-tab ${filter === 'unpublished' ? 'active' : ''}`}
-            onClick={() => setFilter('unpublished')}
-          >
-            Unpublished ({quizzes.filter(q => !q.published).length})
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Quizzes List */}
-      {loading ? (
-        <div className="flex-center" style={{ minHeight: '400px' }}>
-          <div className="spinner"></div>
-        </div>
-      ) : filteredQuizzes.length === 0 ? (
-        <motion.div 
-          className="empty-state glass-card"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <h3>No quizzes found</h3>
-          <p>{filter === 'all' ? 'Create your first quiz to get started!' : `No ${filter} quizzes yet.`}</p>
-          <Link to="/teacher/create-quiz" className="btn btn-primary mt-2">
-            ➕ Create Quiz
-          </Link>
-        </motion.div>
-      ) : (
-        <div className="quizzes-grid">
-          {filteredQuizzes.map((quiz, index) => (
-            <motion.div
-              key={quiz.quizId}
-              className="quiz-management-card glass-card"
+            {/* Filters */}
+            <motion.div 
+              className="card card-glass mb-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
             >
-              <div className="quiz-card-header">
-                <div className="quiz-card-title">
-                  <h3>{quiz.title}</h3>
-                  <span className={`status-badge ${quiz.published ? 'published' : 'unpublished'}`}>
-                    {quiz.published ? '✅ Published' : '❌ Unpublished'}
-                  </span>
+              <div className="card-body">
+                <div className="d-flex flex-wrap gap-2">
+                  <button 
+                    className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                    onClick={() => setFilter('all')}
+                  >
+                    All ({quizzes.length})
+                  </button>
+                  <button 
+                    className={`btn ${filter === 'published' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                    onClick={() => setFilter('published')}
+                  >
+                    Published ({quizzes.filter(q => q.published).length})
+                  </button>
+                  <button 
+                    className={`btn ${filter === 'unpublished' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                    onClick={() => setFilter('unpublished')}
+                  >
+                    Unpublished ({quizzes.filter(q => !q.published).length})
+                  </button>
                 </div>
-              </div>
-
-              <p className="quiz-description">
-                {quiz.description?.substring(0, 100) || 'No description'}
-                {quiz.description?.length > 100 && '...'}
-              </p>
-
-              <div className="quiz-meta-info">
-                <div className="meta-item">
-                  <span className="meta-icon">📂</span>
-                  <span>{quiz.category}</span>
-                </div>
-                <div className="meta-item">
-                  <span className="meta-icon">📊</span>
-                  <span>{quiz.difficulty}</span>
-                </div>
-                <div className="meta-item">
-                  <span className="meta-icon">❓</span>
-                  <span>{quiz.questions?.length || 0} Questions</span>
-                </div>
-                <div className="meta-item">
-                  <span className="meta-icon">⏱️</span>
-                  <span>{quiz.timer} min</span>
-                </div>
-              </div>
-
-              <div className="quiz-stats">
-                <div className="stat-item">
-                  <span className="stat-value">{quiz.attemptCount || 0}</span>
-                  <span className="stat-label">Attempts</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-value">
-                    {new Date(quiz.createdAt).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </span>
-                  <span className="stat-label">Created</span>
-                </div>
-              </div>
-
-              <div className="quiz-actions">
-                <Link to={`/teacher/edit-quiz/${quiz.quizId}`} className="btn btn-secondary btn-small">
-                  ✏️ Edit
-                </Link>
-                <button 
-                  onClick={() => togglePublish(quiz.quizId, quiz.published)}
-                  className={`btn btn-${quiz.published ? 'warning' : 'success'} btn-small`}
-                >
-                  {quiz.published ? '🔒 Unpublish' : '🚀 Publish'}
-                </button>
-                <button 
-                  onClick={() => deleteQuiz(quiz.quizId)}
-                  className="btn btn-danger btn-small"
-                >
-                  🗑️ Delete
-                </button>
-                <Link to={`/teacher/results/${quiz.quizId}`} className="btn btn-info btn-small">
-                  📊 Results
-                </Link>
               </div>
             </motion.div>
-          ))}
+
+            {/* Quizzes List */}
+            {loading ? (
+              <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+                <div className="text-center">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2 text-white">Loading quizzes...</p>
+                </div>
+              </div>
+            ) : filteredQuizzes.length === 0 ? (
+              <motion.div 
+                className="card card-glass p-4 text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <h3 className="mb-3">No quizzes found</h3>
+                <p className="text-muted">{filter === 'all' ? 'Create your first quiz to get started!' : `No ${filter} quizzes yet.`}</p>
+                <Link to="/teacher/create-quiz" className="btn btn-gradient">
+                  <i className="bi bi-plus-circle me-2"></i>Create Quiz
+                </Link>
+              </motion.div>
+            ) : (
+              <div className="row">
+                {filteredQuizzes.map((quiz, index) => (
+                  <motion.div
+                    key={quiz.quizId}
+                    className="col-md-6 col-lg-4 mb-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <div className="card card-glass h-100">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between align-items-start mb-2">
+                          <h5 className="card-title">{quiz.title}</h5>
+                          <span className={`badge ${quiz.published ? 'bg-success' : 'bg-warning'} text-dark`}>
+                            {quiz.published ? 'Published' : 'Draft'}
+                          </span>
+                        </div>
+                        
+                        <p className="card-text text-muted">
+                          {quiz.description?.substring(0, 100) || 'No description'}
+                          {quiz.description?.length > 100 && '...'}
+                        </p>
+                        
+                        <div className="d-flex flex-wrap gap-2 mb-3">
+                          <span className="badge bg-info">{quiz.category}</span>
+                          <span className="badge bg-info">{quiz.difficulty}</span>
+                          <span className="badge bg-info">{quiz.questions?.length || 0} Questions</span>
+                          <span className="badge bg-info">{quiz.timer} min</span>
+                        </div>
+                        
+                        <div className="row text-center mb-3">
+                          <div className="col-6">
+                            <div className="fw-bold text-primary">{quiz.attemptCount || 0}</div>
+                            <div className="text-muted small">Attempts</div>
+                          </div>
+                          <div className="col-6">
+                            <div className="fw-bold text-primary">
+                              {new Date(quiz.createdAt).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </div>
+                            <div className="text-muted small">Created</div>
+                          </div>
+                        </div>
+                        
+                        <div className="d-grid gap-2">
+                          <Link to={`/teacher/edit-quiz/${quiz.quizId}`} className="btn btn-outline-secondary">
+                            <i className="bi bi-pencil me-1"></i> Edit
+                          </Link>
+                          <button 
+                            onClick={() => togglePublish(quiz.quizId, quiz.published)}
+                            className={`btn ${quiz.published ? 'btn-warning' : 'btn-success'}`}
+                          >
+                            {quiz.published ? <><i className="bi bi-lock me-1"></i> Unpublish</> : <><i className="bi bi-send me-1"></i> Publish</>}
+                          </button>
+                          <button 
+                            onClick={() => deleteQuiz(quiz.quizId)}
+                            className="btn btn-danger"
+                          >
+                            <i className="bi bi-trash me-1"></i> Delete
+                          </button>
+                          <Link to={`/teacher/results/${quiz.quizId}`} className="btn btn-info">
+                            <i className="bi bi-bar-chart me-1"></i> Results
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import './Auth.css';
+import '../bootstrap-theme.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -101,144 +101,158 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-container">
+    <div className="min-vh-100 d-flex align-items-center justify-content-center p-3" style={{background: 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)'}}>
       <motion.div 
-        className="auth-card glass-card"
+        className="card card-glass p-4 shadow rounded-4 w-100" style={{ maxWidth: '450px' }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="auth-title">Welcome Back</h2>
-        <p className="auth-subtitle">Login to continue your quiz journey</p>
+        <h2 className="gradient-text text-center mb-2">Welcome Back</h2>
+        <p className="text-secondary text-center mb-4">Login to continue your quiz journey</p>
         
         {message && (
-          <div className={`auth-message ${message.includes('Failed') || message.includes('Cannot connect') || message.includes('Database connection') ? 'error' : ''}`}>
+          <div className={`alert ${message.includes('Failed') || message.includes('Cannot connect') || message.includes('Database connection') ? 'alert-danger' : 'alert-success'} fade show`} role="alert">
             {message}
           </div>
         )}
         
         {/* Tab Navigation */}
-        <div className="tab-navigation">
-          <button 
-            className={`tab-btn ${activeTab === 'student' ? 'active' : ''}`}
-            onClick={() => setActiveTab('student')}
-          >
-            Student Login
-          </button>
-          <button 
-            className={`tab-btn ${activeTab === 'admin' ? 'active' : ''}`}
-            onClick={() => setActiveTab('admin')}
-          >
-            Teacher Login
-          </button>
-        </div>
+        <ul className="nav nav-tabs mb-4" id="authTab" role="tablist">
+          <li className="nav-item" role="presentation">
+            <button 
+              className={`nav-link ${activeTab === 'student' ? 'active' : ''}`}
+              id="student-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#student"
+              type="button"
+              role="tab"
+              aria-controls="student"
+              aria-selected={activeTab === 'student'}
+              onClick={() => setActiveTab('student')}
+            >
+              Student Login
+            </button>
+          </li>
+          <li className="nav-item" role="presentation">
+            <button 
+              className={`nav-link ${activeTab === 'admin' ? 'active' : ''}`}
+              id="teacher-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#teacher"
+              type="button"
+              role="tab"
+              aria-controls="teacher"
+              aria-selected={activeTab === 'admin'}
+              onClick={() => setActiveTab('admin')}
+            >
+              Teacher Login
+            </button>
+          </li>
+        </ul>
         
-        {/* Student Login Section */}
-        {activeTab === 'student' && (
-          <motion.div 
-            className="login-section"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="section-description">
-              <p>Login as a student to take quizzes and track your progress</p>
+        <div className="tab-content" id="authTabContent">
+          {/* Student Login Section */}
+          <div className={`tab-pane fade ${activeTab === 'student' ? 'show active' : ''}`} id="student" role="tabpanel" aria-labelledby="student-tab">
+            <div className="mb-3 text-center">
+              <p className="text-muted">Login as a student to take quizzes and track your progress</p>
             </div>
             
             <form onSubmit={handleSubmit}>
-              <div className="input-group">
-                <label htmlFor="email">Email</label>
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label">Email</label>
                 <input
                   type="email"
+                  className={`form-control input-glass ${errors.email ? 'is-invalid' : ''}`}
                   id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={errors.email ? 'input-error' : ''}
                   placeholder="Enter your student email"
                 />
-                {errors.email && <span className="error-message">{errors.email}</span>}
+                {errors.email && <div className="invalid-feedback">{errors.email}</div>}
               </div>
               
-              <div className="input-group">
-                <label htmlFor="password">Password</label>
+              <div className="mb-3">
+                <label htmlFor="password" className="form-label">Password</label>
                 <input
                   type="password"
+                  className={`form-control input-glass ${errors.password ? 'is-invalid' : ''}`}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={errors.password ? 'input-error' : ''}
                   placeholder="Enter your password"
                 />
-                {errors.password && <span className="error-message">{errors.password}</span>}
+                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
               </div>
               
               <input type="hidden" name="role" value="student" />
 
-              <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-                {loading ? 'Logging in...' : 'Login as Student'}
+              <button type="submit" className="btn btn-gradient w-100 py-2" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Logging in...
+                  </>
+                ) : 'Login as Student'}
               </button>
             </form>
-          </motion.div>
-        )}
-        
-        {/* Admin Login Section */}
-        {activeTab === 'admin' && (
-          <motion.div 
-            className="login-section"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="section-description">
-              <p>Login as an admin/teacher to create and manage quizzes</p>
+          </div>
+          
+          {/* Teacher Login Section */}
+          <div className={`tab-pane fade ${activeTab === 'admin' ? 'show active' : ''}`} id="teacher" role="tabpanel" aria-labelledby="teacher-tab">
+            <div className="mb-3 text-center">
+              <p className="text-muted">Login as a teacher to create and manage quizzes</p>
             </div>
             
             <form onSubmit={handleSubmit}>
-              <div className="input-group">
-                <label htmlFor="email">Email</label>
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label">Email</label>
                 <input
                   type="email"
+                  className={`form-control input-glass ${errors.email ? 'is-invalid' : ''}`}
                   id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={errors.email ? 'input-error' : ''}
-                  placeholder="Enter your admin email"
+                  placeholder="Enter your teacher email"
                 />
-                {errors.email && <span className="error-message">{errors.email}</span>}
+                {errors.email && <div className="invalid-feedback">{errors.email}</div>}
               </div>
               
-              <div className="input-group">
-                <label htmlFor="password">Password</label>
+              <div className="mb-3">
+                <label htmlFor="password" className="form-label">Password</label>
                 <input
                   type="password"
+                  className={`form-control input-glass ${errors.password ? 'is-invalid' : ''}`}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={errors.password ? 'input-error' : ''}
                   placeholder="Enter your password"
                 />
-                {errors.password && <span className="error-message">{errors.password}</span>}
+                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
               </div>
               
               <input type="hidden" name="role" value="teacher" />
 
-              <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-                {loading ? 'Logging in...' : 'Login as Teacher'}
+              <button type="submit" className="btn btn-gradient w-100 py-2" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Logging in...
+                  </>
+                ) : 'Login as Teacher'}
               </button>
             </form>
-          </motion.div>
-        )}
-        
-        <div className="divider">
-          <span>OR</span>
+          </div>
         </div>
         
-        <p className="auth-footer">
-          Don't have an account? <Link to="/register">Register here</Link>
+        <hr className="my-4" />
+        
+        <p className="text-center mb-0">
+          Don't have an account? <Link to="/register" className="text-decoration-none">Register here</Link>
         </p>
       </motion.div>
     </div>

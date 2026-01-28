@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import backupService from '../../services/backupService';
 import apiService from '../../services/api';
-import './QuizPlayer.css';
+import '../../bootstrap-theme.css';
 
 const QuizPlayer = () => {
   const { quizId } = useParams();
@@ -380,21 +380,30 @@ const QuizPlayer = () => {
 
   if (loading) {
     return (
-      <div className="quiz-player-container flex-center">
-        <div className="spinner"></div>
+      <div className="container-fluid p-0">
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+          <div className="text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-2 text-white">Loading quiz...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!quiz) {
     return (
-      <div className="quiz-player-container flex-center">
-        <div className="error-message">
-          <h2>Quiz Not Found</h2>
-          <p>The requested quiz could not be found.</p>
-          <button onClick={() => navigate('/student/quizzes')} className="btn btn-primary">
-            Browse Quizzes
-          </button>
+      <div className="container-fluid p-0">
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+          <div className="card card-glass p-4 text-center">
+            <h2 className="gradient-text mb-3">Quiz Not Found</h2>
+            <p className="text-muted mb-4">The requested quiz could not be found.</p>
+            <button onClick={() => navigate('/student/quizzes')} className="btn btn-gradient">
+              Browse Quizzes
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -404,19 +413,17 @@ const QuizPlayer = () => {
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
 
   return (
-    <div className={`quiz-player-container ${examMode ? 'exam-mode' : ''}`}>
+    <div className="container-fluid p-0" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)' }}>
       {/* Exam Mode Overlay */}
       {examMode && (
-        <div className="exam-mode-overlay">
-          <div className="exam-mode-header">
-            <div className="exam-info">
-              <span className="exam-title">{quiz.title}</span>
-              <span className="exam-timer">⏱️ {formatTime(timeRemaining)}</span>
+        <div className="position-fixed top-0 start-0 w-100 p-3" style={{ zIndex: 1050, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }}>
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center gap-3">
+              <h5 className="text-white mb-0">{quiz.title}</h5>
+              <div className="text-white fs-5">⏱️ {formatTime(timeRemaining)}</div>
             </div>
-            <div className="exam-actions">
-              <span className="tab-switches">
-                Tab Switches: {tabSwitchCount}/{MAX_TAB_SWITCHES}
-              </span>
+            <div className="text-white">
+              Tab Switches: {tabSwitchCount}/{MAX_TAB_SWITCHES}
             </div>
           </div>
         </div>
@@ -426,170 +433,201 @@ const QuizPlayer = () => {
       <AnimatePresence>
         {showWarning && (
           <motion.div
-            className="warning-message"
+            className="position-fixed top-50 start-50 translate-middle p-3"
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
+            style={{ zIndex: 1060 }}
           >
-            ⚠️ Warning: Suspicious activity detected!
+            <div className="alert alert-warning alert-dismissible fade show" role="alert">
+              ⚠️ Warning: Suspicious activity detected!
+              <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Quiz Header */}
-      {!examMode && (
-        <div className="quiz-header glass-card">
-          <div className="quiz-info">
-            <h1>{quiz.title}</h1>
-            <p>{quiz.description}</p>
-          </div>
-          <div className="quiz-meta">
-            <span className="meta-item">⏱️ {quiz.timer} min</span>
-            <span className="meta-item">❓ {quiz.questions.length} questions</span>
-            <span className="meta-item">📊 {quiz.difficulty}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Progress Bar */}
-      <div className="progress-container">
-        <div 
-          className="progress-bar" 
-          style={{ width: `${progress}%` }}
-        ></div>
-        <div className="progress-text">
-          Question {currentQuestionIndex + 1} of {quiz.questions.length}
-        </div>
-      </div>
-
-      {/* Start Screen */}
-      {!quizStarted && (
-        <div className="start-screen glass-card">
-          <h2>Ready to Start?</h2>
-          <div className="quiz-details">
-            <div className="detail-item">
-              <span className="icon">⏱️</span>
-              <span>{quiz.timer} minutes</span>
-            </div>
-            <div className="detail-item">
-              <span className="icon">❓</span>
-              <span>{quiz.questions.length} questions</span>
-            </div>
-            <div className="detail-item">
-              <span className="icon">📊</span>
-              <span>{quiz.difficulty} difficulty</span>
-            </div>
-            {quiz.examMode && (
-              <div className="detail-item exam-mode-indicator">
-                <span className="icon">🔒</span>
-                <span>Exam Mode Active</span>
+      <div className="container py-4">
+        {/* Quiz Header */}
+        {!examMode && (
+          <div className="card card-glass mb-4">
+            <div className="card-body">
+              <div className="row align-items-center">
+                <div className="col-md-8">
+                  <h1 className="gradient-text">{quiz.title}</h1>
+                  <p className="text-muted">{quiz.description}</p>
+                </div>
+                <div className="col-md-4">
+                  <div className="d-flex flex-wrap gap-3 justify-content-end">
+                    <span className="badge bg-info">⏱️ {quiz.timer} min</span>
+                    <span className="badge bg-info">❓ {quiz.questions.length} questions</span>
+                    <span className="badge bg-info">📊 {quiz.difficulty}</span>
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
           </div>
-          <div className="start-actions">
-            <button onClick={startQuiz} className="btn btn-primary btn-large">
-              Start Quiz
-            </button>
-            <button onClick={() => navigate('/student/quizzes')} className="btn btn-secondary">
-              Back to Quizzes
-            </button>
+        )}
+
+        {/* Progress Bar */}
+        <div className="card card-glass mb-4">
+          <div className="card-body p-3">
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <span className="text-muted">Progress</span>
+              <span className="text-muted">{currentQuestionIndex + 1} of {quiz.questions.length}</span>
+            </div>
+            <div className="progress" style={{ height: '10px' }}>
+              <div 
+                className="progress-bar" 
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Quiz Content */}
-      {quizStarted && !quizCompleted && (
-        <div className="quiz-content">
-          {/* Question Header */}
-          <div className="question-header">
-            {!examMode && (
-              <div className="timer-display">
-                <span className="time-left">⏱️ {formatTime(timeRemaining)}</span>
-                <span className="tab-switches">
-                  Tab Switches: {tabSwitchCount}/{MAX_TAB_SWITCHES}
-                </span>
+        {/* Start Screen */}
+        {!quizStarted && (
+          <div className="card card-glass mb-4">
+            <div className="card-body text-center">
+              <h2 className="gradient-text mb-4">Ready to Start?</h2>
+              <div className="row justify-content-center mb-4">
+                <div className="col-md-8">
+                  <div className="d-flex flex-wrap justify-content-center gap-4">
+                    <div className="text-center">
+                      <div className="fs-4 mb-1">⏱️</div>
+                      <div>{quiz.timer} minutes</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="fs-4 mb-1">❓</div>
+                      <div>{quiz.questions.length} questions</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="fs-4 mb-1">📊</div>
+                      <div>{quiz.difficulty} difficulty</div>
+                    </div>
+                    {quiz.examMode && (
+                      <div className="text-center">
+                        <div className="fs-4 mb-1">🔒</div>
+                        <div>Exam Mode Active</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
-            <h2 className="question-text">
-              {currentQuestionIndex + 1}. {currentQuestion.questionText}
-            </h2>
-            {currentQuestion.points && (
-              <span className="points-badge">{currentQuestion.points} points</span>
-            )}
-          </div>
-
-          {/* Question Image */}
-          {currentQuestion.imageUrl && (
-            <div className="question-image">
-              <img src={currentQuestion.imageUrl} alt="Question" />
+              <div className="d-flex justify-content-center gap-3">
+                <button onClick={startQuiz} className="btn btn-gradient btn-lg">
+                  Start Quiz
+                </button>
+                <button onClick={() => navigate('/student/quizzes')} className="btn btn-outline-secondary btn-lg">
+                  Back to Quizzes
+                </button>
+              </div>
             </div>
-          )}
-
-          {/* Options */}
-          <div className="options-container">
-            {currentQuestion.options.map((option, index) => (
-              <motion.button
-                key={index}
-                className={`option-btn ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}`}
-                onClick={() => handleAnswerSelect(index)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <span className="option-letter">
-                  {String.fromCharCode(65 + index)}
-                </span>
-                <span className="option-text">{option}</span>
-              </motion.button>
-            ))}
           </div>
+        )}
 
-          {/* Hint */}
-          {currentQuestion.hint && !usedHints.includes(currentQuestionIndex) && (
-            <div className="hint-section">
-              <button 
-                onClick={handleUseHint}
-                className="btn btn-hint"
-              >
-                💡 Use Hint (-2 points)
-              </button>
-              {usedHints.includes(currentQuestionIndex) && (
-                <div className="hint-content">
-                  <strong>Hint:</strong> {currentQuestion.hint}
+        {/* Quiz Content */}
+        {quizStarted && !quizCompleted && (
+          <div className="card card-glass">
+            <div className="card-body">
+              {/* Question Header */}
+              <div className="mb-4">
+                {!examMode && (
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <div className="d-flex gap-3">
+                      <span className="text-white fs-5">⏱️ {formatTime(timeRemaining)}</span>
+                      <span className="text-white">Tab Switches: {tabSwitchCount}/{MAX_TAB_SWITCHES}</span>
+                    </div>
+                  </div>
+                )}
+                <h3 className="mb-3">
+                  {currentQuestionIndex + 1}. {currentQuestion.questionText}
+                </h3>
+                {currentQuestion.points && (
+                  <span className="badge bg-warning text-dark ms-2">{currentQuestion.points} points</span>
+                )}
+              </div>
+
+              {/* Question Image */}
+              {currentQuestion.imageUrl && (
+                <div className="mb-4 text-center">
+                  <img 
+                    src={currentQuestion.imageUrl} 
+                    alt="Question" 
+                    className="img-fluid rounded"
+                    style={{ maxHeight: '300px', objectFit: 'contain' }}
+                  />
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Navigation */}
-          <div className="navigation-buttons">
-            <button
-              onClick={handlePreviousQuestion}
-              disabled={currentQuestionIndex === 0}
-              className="btn btn-secondary"
-            >
-              ← Previous
-            </button>
-            
-            {currentQuestionIndex < quiz.questions.length - 1 ? (
-              <button
-                onClick={handleNextQuestion}
-                disabled={userAnswers[currentQuestionIndex] === null}
-                className="btn btn-primary"
-              >
-                Next →
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmitQuiz}
-                disabled={userAnswers.some(answer => answer === null)}
-                className="btn btn-success"
-              >
-                Submit Quiz
-              </button>
-            )}
+              {/* Options */}
+              <div className="row">
+                {currentQuestion.options.map((option, index) => (
+                  <div key={index} className="col-12 mb-2">
+                    <motion.button
+                      className={`btn w-100 text-start ${userAnswers[currentQuestionIndex] === index ? 'btn-primary' : 'btn-outline-light'}`}
+                      onClick={() => handleAnswerSelect(index)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <span className="me-3 fw-bold">
+                        {String.fromCharCode(65 + index)}.
+                      </span>
+                      <span>{option}</span>
+                    </motion.button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Hint */}
+              {currentQuestion.hint && !usedHints.includes(currentQuestionIndex) && (
+                <div className="mt-4">
+                  <button 
+                    onClick={handleUseHint}
+                    className="btn btn-outline-info"
+                  >
+                    💡 Use Hint (-2 points)
+                  </button>
+                  {usedHints.includes(currentQuestionIndex) && (
+                    <div className="alert alert-info mt-2">
+                      <strong>Hint:</strong> {currentQuestion.hint}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Navigation */}
+              <div className="d-flex justify-content-between mt-4 pt-3 border-top border-secondary">
+                <button
+                  onClick={handlePreviousQuestion}
+                  disabled={currentQuestionIndex === 0}
+                  className="btn btn-outline-secondary"
+                >
+                  ← Previous
+                </button>
+                
+                {currentQuestionIndex < quiz.questions.length - 1 ? (
+                  <button
+                    onClick={handleNextQuestion}
+                    disabled={userAnswers[currentQuestionIndex] === null}
+                    className="btn btn-gradient"
+                  >
+                    Next →
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSubmitQuiz}
+                    disabled={userAnswers.some(answer => answer === null)}
+                    className="btn btn-success"
+                  >
+                    Submit Quiz
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

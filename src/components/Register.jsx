@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import './Auth.css';
+import '../bootstrap-theme.css';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -93,82 +93,83 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-container">
+    <div className="min-vh-100 d-flex align-items-center justify-content-center p-3" style={{background: 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)'}}>
       <motion.div 
-        className="auth-card glass-card"
+        className="card card-glass p-4 shadow rounded-4 w-100" style={{ maxWidth: '450px' }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="auth-title">Create Account</h2>
-        <p className="auth-subtitle">Join our quiz platform today</p>
+        <h2 className="gradient-text text-center mb-2">Create Account</h2>
+        <p className="text-secondary text-center mb-4">Join our quiz platform today</p>
         
         {message && (
-          <div className={`auth-message ${message.includes('Failed') ? 'error' : 'success'}`}>
+          <div className={`alert ${message.includes('Failed') ? 'alert-danger' : 'alert-success'} fade show`} role="alert">
             {message}
           </div>
         )}
         
         <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label htmlFor="fullName">Full Name</label>
+          <div className="mb-3">
+            <label htmlFor="fullName" className="form-label">Full Name</label>
             <input
               type="text"
+              className={`form-control input-glass ${errors.fullName ? 'is-invalid' : ''}`}
               id="fullName"
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
-              className={errors.fullName ? 'input-error' : ''}
               placeholder="Enter your full name"
             />
-            {errors.fullName && <span className="error-message">{errors.fullName}</span>}
+            {errors.fullName && <div className="invalid-feedback">{errors.fullName}</div>}
           </div>
           
-          <div className="input-group">
-            <label htmlFor="email">Email</label>
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">Email</label>
             <input
               type="email"
+              className={`form-control input-glass ${errors.email ? 'is-invalid' : ''}`}
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={errors.email ? 'input-error' : ''}
               placeholder="Enter your email"
             />
-            {errors.email && <span className="error-message">{errors.email}</span>}
+            {errors.email && <div className="invalid-feedback">{errors.email}</div>}
           </div>
           
-          <div className="input-group">
-            <label htmlFor="password">Password</label>
+          <div className="mb-3">
+            <label htmlFor="password" className="form-label">Password</label>
             <input
               type="password"
+              className={`form-control input-glass ${errors.password ? 'is-invalid' : ''}`}
               id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={errors.password ? 'input-error' : ''}
               placeholder="Create a password"
             />
-            {errors.password && <span className="error-message">{errors.password}</span>}
+            {errors.password && <div className="invalid-feedback">{errors.password}</div>}
           </div>
           
-          <div className="input-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
+          <div className="mb-3">
+            <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
             <input
               type="password"
+              className={`form-control input-glass ${errors.confirmPassword ? 'is-invalid' : ''}`}
               id="confirmPassword"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={errors.confirmPassword ? 'input-error' : ''}
               placeholder="Confirm your password"
             />
-            {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+            {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
           </div>
           
-          <div className="input-group">
-            <label htmlFor="role">I am a...</label>
+          <div className="mb-3">
+            <label htmlFor="role" className="form-label">I am a...</label>
             <select
+              className="form-select input-glass"
               id="role"
               name="role"
               value={formData.role}
@@ -179,17 +180,20 @@ const Register = () => {
             </select>
           </div>
           
-          <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Register'}
+          <button type="submit" className="btn btn-gradient w-100 py-2" disabled={loading}>
+            {loading ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Creating Account...
+              </>
+            ) : 'Register'}
           </button>
         </form>
         
-        <div className="divider">
-          <span>OR</span>
-        </div>
+        <hr className="my-4" />
         
-        <p className="auth-footer">
-          Already have an account? <Link to="/login">Login here</Link>
+        <p className="text-center mb-0">
+          Already have an account? <Link to="/login" className="text-decoration-none">Login here</Link>
         </p>
       </motion.div>
     </div>

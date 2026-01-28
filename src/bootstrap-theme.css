@@ -1,0 +1,297 @@
+/* Custom Bootstrap Theme for QuizMaster Application */
+
+/* Import existing theme variables */
+:root {
+  /* Color Palette - Modern Teal & Amber */
+  --primary: #0d9488;
+  --primary-light: #5fddd0;
+  --primary-dark: #087265;
+  --secondary: #f59e0b;
+  --secondary-light: #fbbf24;
+  --accent: #ec4899;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #0ea5e9;
+  
+  /* Neutrals */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  
+  /* Glass-morphism */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(13, 148, 136, 0.15);
+}
+
+/* Override Bootstrap default colors with our theme */
+.btn-primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark) !important;
+  border-color: var(--primary-dark) !important;
+}
+
+.btn-secondary {
+  background-color: var(--secondary) !important;
+  border-color: var(--secondary) !important;
+}
+
+.btn-success {
+  background-color: var(--success) !important;
+  border-color: var(--success) !important;
+}
+
+.btn-info {
+  background-color: var(--info) !important;
+  border-color: var(--info) !important;
+}
+
+.btn-warning {
+  background-color: var(--warning) !important;
+  border-color: var(--warning) !important;
+}
+
+.btn-danger {
+  background-color: var(--danger) !important;
+  border-color: var(--danger) !important;
+}
+
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.text-secondary {
+  color: var(--secondary) !important;
+}
+
+.text-success {
+  color: var(--success) !important;
+}
+
+.text-info {
+  color: var(--info) !important;
+}
+
+.text-warning {
+  color: var(--warning) !important;
+}
+
+.text-danger {
+  color: var(--danger) !important;
+}
+
+.bg-primary {
+  background-color: var(--bg-primary) !important;
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Custom glass-morphism cards */
+.card-glass {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+/* Custom form controls */
+.form-control {
+  background-color: var(--glass-bg) !important;
+  border: 2px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.form-control:focus {
+  background-color: var(--glass-bg) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25) !important;
+  color: var(--text-primary) !important;
+}
+
+.form-select {
+  background-color: var(--glass-bg) !important;
+  border: 2px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.form-select:focus {
+  background-color: var(--glass-bg) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Custom navbar */
+.navbar-custom {
+  background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary)) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+/* Custom sidebar */
+.sidebar-custom {
+  background: var(--glass-bg) !important;
+  border-right: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Custom buttons with gradient */
+.btn-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+  border: none !important;
+  color: white !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 12px rgba(13, 148, 136, 0.4) !important;
+  color: white !important;
+}
+
+/* Custom inputs with glass effect */
+.input-glass {
+  background: var(--glass-bg) !important;
+  border: 2px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  transition: all 0.3s ease !important;
+}
+
+.input-glass:focus {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1) !important;
+}
+
+/* Container with gradient background */
+.container-gradient {
+  min-height: 100vh !important;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Utility classes */
+.text-light {
+  color: var(--text-primary) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.border-glass {
+  border: 1px solid var(--glass-border) !important;
+}
+
+/* Custom alert styles */
+.alert-primary {
+  background: var(--glass-bg) !important;
+  border-color: var(--primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Custom table styles */
+.table {
+  --bs-table-bg: var(--glass-bg) !important;
+  --bs-table-color: var(--text-primary) !important;
+  --bs-table-border-color: var(--glass-border) !important;
+}
+
+.table-hover > tbody > tr:hover {
+  --bs-table-accent-bg: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Custom progress bar */
+.progress {
+  background-color: var(--glass-bg) !important;
+}
+
+.progress-bar {
+  background: linear-gradient(90deg, var(--primary), var(--secondary)) !important;
+}
+
+/* Custom modal */
+.modal-content {
+  background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary)) !important;
+}
+
+/* Custom badge */
+.badge.bg-primary {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+}
+
+/* Animation helpers */
+.animate-lift {
+  transition: transform 0.3s ease !important;
+}
+
+.animate-lift:hover {
+  transform: translateY(-5px) !important;
+}
+
+/* Page transitions */
+.fade-in {
+  animation: fadeIn 0.5s ease-out !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading spinner */
+.spinner-border {
+  border-width: 0.1875rem !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container-fluid, .container-sm, .container-md, .container-lg, .container-xl, .container-xxl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}

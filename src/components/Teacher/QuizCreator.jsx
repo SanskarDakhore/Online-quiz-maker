@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiService from '../../services/api';
-import './QuizCreator.css';
+import '../../bootstrap-theme.css';
 
 const QuizCreator = () => {
   const { currentUser, logout } = useAuth();
@@ -224,426 +224,507 @@ const QuizCreator = () => {
 
   if (loading) {
     return (
-      <div className="quiz-creator-container flex-center">
-        <div className="spinner"></div>
-        <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Loading...</p>
+      <div className="container-fluid p-0">
+        <div className="row g-0">
+          {/* Sidebar */}
+          <div className="col-md-3 col-lg-2 sidebar-custom p-3 min-vh-100">
+            <div className="mb-4 text-center">
+              <h3 className="gradient-text mb-1">QuizMaster</h3>
+              <small className="text-muted">Teacher</small>
+            </div>
+            <nav className="nav flex-column mb-4">
+              <Link to="/teacher/dashboard" className="nav-link text-white rounded py-2 px-3 mb-1">
+                <i className="bi bi-speedometer2 me-2"></i> Dashboard
+              </Link>
+              <Link to="/teacher/quizzes" className="nav-link text-white rounded py-2 px-3 mb-1">
+                <i className="bi bi-journal-text me-2"></i> My Quizzes
+              </Link>
+              <Link to="/teacher/create-quiz" className="nav-link text-white active bg-primary rounded py-2 px-3 mb-1">
+                <i className="bi bi-plus-circle me-2"></i> Create Quiz
+              </Link>
+            </nav>
+            <button className="btn btn-danger w-100" disabled>
+              <i className="bi bi-door-open me-2"></i> Logout
+            </button>
+          </div>
+          
+          {/* Main Content */}
+          <div className="col-md-9 col-lg-10">
+            <div className="p-4">
+              <div className="card card-glass mb-4">
+                <div className="card-body text-center">
+                  <h1 className="gradient-text mb-1">{isEditMode ? '✏️ Edit Quiz' : '➕ Create New Quiz'}</h1>
+                  <p className="mb-0">Create and customize your quiz</p>
+                </div>
+              </div>
+              
+              <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '400px' }}>
+                <div className="text-center">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2 text-white">Loading...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="teacher-dashboard">
-      {/* Sidebar */}
-      <div className="sidebar glass-card">
-        <div className="sidebar-header">
-          <h2>QuizMaster</h2>
-          <div className="user-role">Teacher</div>
-        </div>
-        
-        <nav className="sidebar-nav">
-          <Link to="/teacher/dashboard" className={`nav-item ${location.pathname === '/teacher/dashboard' ? 'active' : ''}`}>
-            <span className="nav-icon">📊</span>
-            Dashboard
-          </Link>
-          <Link to="/teacher/quizzes" className={`nav-item ${location.pathname === '/teacher/quizzes' ? 'active' : ''}`}>
-            <span className="nav-icon">📋</span>
-            My Quizzes
-          </Link>
-          <Link to="/teacher/create-quiz" className={`nav-item ${location.pathname === '/teacher/create-quiz' ? 'active' : ''}`}>
-            <span className="nav-icon">➕</span>
-            Create Quiz
-          </Link>
-        </nav>
-        
-        <button onClick={logout} className="btn btn-danger logout-btn">
-          🚪 Logout
-        </button>
-      </div>
-      
-      {/* Main Content */}
-      <div className="dashboard-main">
-        <div className="dashboard-header glass-card">
-          <div>
-            <h1>{isEditMode ? '✏️ Edit Quiz' : '➕ Create New Quiz'}</h1>
-            <p>Create and customize your quiz</p>
+    <div className="container-fluid p-0">
+      <div className="row g-0">
+        {/* Sidebar */}
+        <div className="col-md-3 col-lg-2 sidebar-custom p-3 min-vh-100">
+          <div className="mb-4 text-center">
+            <h3 className="gradient-text mb-1">QuizMaster</h3>
+            <small className="text-muted">Teacher</small>
           </div>
-          <div className="header-actions">
-            <button onClick={logout} className="btn btn-danger">
-              🚪 Logout
-            </button>
-          </div>
-        </div>
-
-      {/* Quiz Info Form */}
-      <motion.div 
-        className="quiz-info-form"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h2>📋 Quiz Information</h2>
-        <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="title">Title *</label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={quizData.title}
-              onChange={handleQuizChange}
-              placeholder="Enter quiz title"
-              className="form-input"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              value={quizData.description}
-              onChange={handleQuizChange}
-              placeholder="Enter quiz description"
-              className="form-input"
-              rows="3"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="category">Category</label>
-            <select
-              id="category"
-              name="category"
-              value={quizData.category}
-              onChange={handleQuizChange}
-              className="form-input"
-            >
-              <option value="General">General</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="Science">Science</option>
-              <option value="History">History</option>
-              <option value="Geography">Geography</option>
-              <option value="Literature">Literature</option>
-              <option value="Technology">Technology</option>
-              <option value="Art">Art</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="difficulty">Difficulty</label>
-            <select
-              id="difficulty"
-              name="difficulty"
-              value={quizData.difficulty}
-              onChange={handleQuizChange}
-              className="form-input"
-            >
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="timer">Timer (minutes)</label>
-            <input
-              type="number"
-              id="timer"
-              name="timer"
-              value={quizData.timer}
-              onChange={handleQuizChange}
-              min="1"
-              max="180"
-              className="form-input"
-            />
-            <div className="input-hint">Set the total time for the quiz</div>
-          </div>
-
-          <div className="form-group checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                name="timerPerQuestion"
-                checked={quizData.timerPerQuestion}
-                onChange={handleQuizChange}
-              />
-              Timer per question
-            </label>
-          </div>
-
-          <div className="form-group checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                name="examMode"
-                checked={quizData.examMode}
-                onChange={handleQuizChange}
-              />
-              Exam Mode (Restricts navigation and copy/paste)
-            </label>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="resultReleaseMode">Result Release Mode</label>
-            <select
-              id="resultReleaseMode"
-              name="resultReleaseMode"
-              value={quizData.resultReleaseMode}
-              onChange={handleQuizChange}
-              className="form-input"
-            >
-              <option value="immediate">Immediate</option>
-              <option value="afterAll">After all attempts</option>
-              <option value="specificDate">Specific date</option>
-            </select>
-          </div>
-
-          {quizData.resultReleaseMode === 'specificDate' && (
-            <div className="form-group">
-              <label htmlFor="resultReleaseDate">Result Release Date</label>
-              <input
-                type="datetime-local"
-                id="resultReleaseDate"
-                name="resultReleaseDate"
-                value={quizData.resultReleaseDate}
-                onChange={handleQuizChange}
-                className="form-input"
-              />
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Question Creator */}
-      <motion.div 
-        className="question-creator"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <h2>❓ Add Question</h2>
-        <div className="question-form">
-          <div className="form-group">
-            <label htmlFor="questionText">Question *</label>
-            <textarea
-              id="questionText"
-              name="questionText"
-              value={currentQuestion.questionText}
-              onChange={handleQuestionChange}
-              placeholder="Enter your question"
-              className="form-input"
-              rows="2"
-            />
-          </div>
-
-          <div className="options-grid">
-            {[0, 1, 2, 3].map((index) => (
-              <div key={index} className="option-group">
-                <label>Option {String.fromCharCode(65 + index)} *</label>
-                <input
-                  type="text"
-                  value={currentQuestion.options[index]}
-                  onChange={(e) => handleOptionChange(index, e.target.value)}
-                  placeholder={`Option ${String.fromCharCode(65 + index)}`}
-                  className="form-input"
-                />
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="correctAnswer"
-                    checked={currentQuestion.correctAnswer === index}
-                    onChange={() => setCurrentQuestion(prev => ({ ...prev, correctAnswer: index }))}
-                  />
-                  Mark as Correct Answer
-                </label>
-              </div>
-            ))}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="explanation">Explanation</label>
-            <textarea
-              id="explanation"
-              name="explanation"
-              value={currentQuestion.explanation}
-              onChange={handleQuestionChange}
-              placeholder="Explanation for the correct answer"
-              className="form-input"
-              rows="2"
-            />
-            <div className="input-hint">Help students understand why this is the correct answer</div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="hint">Hint</label>
-            <input
-              type="text"
-              id="hint"
-              name="hint"
-              value={currentQuestion.hint}
-              onChange={handleQuestionChange}
-              placeholder="Hint for this question (optional)"
-              className="form-input"
-            />
-            <div className="input-hint">Provide a clue to help students answer correctly</div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="concept">Concept</label>
-            <input
-              type="text"
-              id="concept"
-              name="concept"
-              value={currentQuestion.concept}
-              onChange={handleQuestionChange}
-              placeholder="Learning concept (optional)"
-              className="form-input"
-            />
-            <div className="input-hint">Identify the learning objective or concept</div>
-          </div>
-
-          <button onClick={addQuestion} className="add-question-btn">
-            ➕ Add Question
+          
+          <nav className="nav flex-column mb-4">
+            <Link to="/teacher/dashboard" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/dashboard' ? 'active bg-primary' : ''}`}>
+              <i className="bi bi-speedometer2 me-2"></i> Dashboard
+            </Link>
+            <Link to="/teacher/quizzes" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/quizzes' ? 'active bg-primary' : ''}`}>
+              <i className="bi bi-journal-text me-2"></i> My Quizzes
+            </Link>
+            <Link to="/teacher/create-quiz" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/create-quiz' ? 'active bg-primary' : ''}`}>
+              <i className="bi bi-plus-circle me-2"></i> Create Quiz
+            </Link>
+          </nav>
+          
+          <button onClick={logout} className="btn btn-danger w-100">
+            <i className="bi bi-door-open me-2"></i> Logout
           </button>
         </div>
-      </motion.div>
-
-      {/* Questions List */}
-      {quizData.questions.length > 0 && (
-        <motion.div 
-          className="questions-list"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h2>📝 Questions <span className="question-counter">({quizData.questions.length})</span></h2>
-          <div className="questions-container">
-            {quizData.questions.map((question, index) => (
-              <motion.div 
-                key={index} 
-                className="question-item"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <div className="question-header">
-                  <h3>Question {index + 1}: {question.questionText.substring(0, 100)}{question.questionText.length > 100 ? '...' : ''}</h3>
-                  <button 
-                    onClick={() => removeQuestion(index)}
-                    className="btn btn-danger btn-small"
-                  >
-                    🗑️ Remove
-                  </button>
+        
+        {/* Main Content */}
+        <div className="col-md-9 col-lg-10">
+          <div className="p-4">
+            <div className="card card-glass mb-4">
+              <div className="card-body d-flex justify-content-between align-items-center">
+                <div>
+                  <h1 className="gradient-text mb-1">{isEditMode ? '✏️ Edit Quiz' : '➕ Create New Quiz'}</h1>
+                  <p className="mb-0">Create and customize your quiz</p>
                 </div>
-                <div className="question-options">
-                  {question.options.map((option, optIndex) => (
-                    <div 
-                      key={optIndex} 
-                      className={`option-preview ${question.correctAnswer === optIndex ? 'correct' : ''}`}
-                    >
-                      <span className="option-letter">{String.fromCharCode(65 + optIndex)}</span>
-                      <span className="option-text">{option.substring(0, 50)}{option.length > 50 ? '...' : ''}</span>
-                      {question.correctAnswer === optIndex && <span className="correct-badge">✓</span>}
-                    </div>
-                  ))}
-                </div>
-                {question.explanation && (
-                  <div className="question-explanation">
-                    <strong>Explanation:</strong> {question.explanation.substring(0, 150)}{question.explanation.length > 150 ? '...' : ''}
-                  </div>
-                )}
-                {question.hint && (
-                  <div className="question-hint">
-                    <strong>Hint:</strong> {question.hint}
-                  </div>
-                )}
-                {question.concept && (
-                  <div className="question-concept">
-                    <strong>Concept:</strong> {question.concept}
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Action Buttons */}
-      <div className="action-buttons">
-        <button 
-          onClick={() => saveQuiz(false)} 
-          className="btn btn-secondary"
-          disabled={loading}
-        >
-          💾 Save as Draft
-        </button>
-        <button 
-          onClick={previewQuiz} 
-          className="btn btn-info"
-          disabled={quizData.questions.length === 0}
-        >
-          👁️ Preview Quiz
-        </button>
-        <button 
-          onClick={() => saveQuiz(true)} 
-          className="btn btn-success"
-          disabled={loading || !quizData.title.trim() || quizData.questions.length === 0}
-        >
-          🚀 Publish Quiz
-        </button>
-      </div>
-
-      {/* Preview Modal */}
-      <AnimatePresence>
-        {showPreview && (
-          <motion.div 
-            className="preview-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="preview-content">
-              <div className="preview-header">
-                <h2>{quizData.title || 'Untitled Quiz'} Preview</h2>
-                <button 
-                  onClick={() => setShowPreview(false)}
-                  className="btn btn-danger btn-small"
-                >
-                  ✕ Close
+                <button onClick={logout} className="btn btn-danger">
+                  <i className="bi bi-door-open me-1"></i> Logout
                 </button>
               </div>
-              <div className="preview-body">
-                <p>{quizData.description || 'No description provided'}</p>
-                <div className="preview-meta">
-                  <span>⏱️ {quizData.timer} min</span>
-                  <span>❓ {quizData.questions.length} questions</span>
-                  <span>📊 {quizData.difficulty}</span>
-                  {quizData.examMode && <span className="exam-mode-badge">🔒 Exam Mode</span>}
-                </div>
-                <div className="preview-questions">
-                  {quizData.questions.slice(0, 3).map((question, index) => (
-                    <div key={index} className="preview-question">
-                      <h4>{index + 1}. {question.questionText}</h4>
-                      <div className="preview-options">
-                        {question.options.map((option, optIndex) => (
-                          <div 
-                            key={optIndex} 
-                            className="preview-option"
-                          >
-                            {String.fromCharCode(65 + optIndex)}. {option}
-                          </div>
-                        ))}
-                      </div>
+            </div>
+
+            {/* Quiz Info Form */}
+            <motion.div 
+              className="card card-glass mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="card-header">
+                <h3 className="mb-0">📋 Quiz Information</h3>
+              </div>
+              <div className="card-body">
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="title" className="form-label">Title *</label>
+                    <input
+                      type="text"
+                      className="form-control input-glass"
+                      id="title"
+                      name="title"
+                      value={quizData.title}
+                      onChange={handleQuizChange}
+                      placeholder="Enter quiz title"
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="category" className="form-label">Category</label>
+                    <select
+                      className="form-select input-glass"
+                      id="category"
+                      name="category"
+                      value={quizData.category}
+                      onChange={handleQuizChange}
+                    >
+                      <option value="General">General</option>
+                      <option value="Mathematics">Mathematics</option>
+                      <option value="Science">Science</option>
+                      <option value="History">History</option>
+                      <option value="Geography">Geography</option>
+                      <option value="Literature">Literature</option>
+                      <option value="Technology">Technology</option>
+                      <option value="Art">Art</option>
+                    </select>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="difficulty" className="form-label">Difficulty</label>
+                    <select
+                      className="form-select input-glass"
+                      id="difficulty"
+                      name="difficulty"
+                      value={quizData.difficulty}
+                      onChange={handleQuizChange}
+                    >
+                      <option value="Easy">Easy</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Hard">Hard</option>
+                    </select>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="timer" className="form-label">Timer (minutes)</label>
+                    <input
+                      type="number"
+                      className="form-control input-glass"
+                      id="timer"
+                      name="timer"
+                      value={quizData.timer}
+                      onChange={handleQuizChange}
+                      min="1"
+                      max="180"
+                    />
+                    <div className="form-text">Set the total time for the quiz</div>
+                  </div>
+
+                  <div className="col-md-12 mb-3">
+                    <label htmlFor="description" className="form-label">Description</label>
+                    <textarea
+                      className="form-control input-glass"
+                      id="description"
+                      name="description"
+                      value={quizData.description}
+                      onChange={handleQuizChange}
+                      placeholder="Enter quiz description"
+                      rows="3"
+                    ></textarea>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="timerPerQuestion"
+                        name="timerPerQuestion"
+                        checked={quizData.timerPerQuestion}
+                        onChange={handleQuizChange}
+                      />
+                      <label className="form-check-label" htmlFor="timerPerQuestion">
+                        Timer per question
+                      </label>
                     </div>
-                  ))}
-                  {quizData.questions.length > 3 && (
-                    <p>+ {quizData.questions.length - 3} more questions</p>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="examMode"
+                        name="examMode"
+                        checked={quizData.examMode}
+                        onChange={handleQuizChange}
+                      />
+                      <label className="form-check-label" htmlFor="examMode">
+                        Exam Mode (Restricts navigation and copy/paste)
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="resultReleaseMode" className="form-label">Result Release Mode</label>
+                    <select
+                      className="form-select input-glass"
+                      id="resultReleaseMode"
+                      name="resultReleaseMode"
+                      value={quizData.resultReleaseMode}
+                      onChange={handleQuizChange}
+                    >
+                      <option value="immediate">Immediate</option>
+                      <option value="afterAll">After all attempts</option>
+                      <option value="specificDate">Specific date</option>
+                    </select>
+                  </div>
+
+                  {quizData.resultReleaseMode === 'specificDate' && (
+                    <div className="col-md-6 mb-3">
+                      <label htmlFor="resultReleaseDate" className="form-label">Result Release Date</label>
+                      <input
+                        type="datetime-local"
+                        className="form-control input-glass"
+                        id="resultReleaseDate"
+                        name="resultReleaseDate"
+                        value={quizData.resultReleaseDate}
+                        onChange={handleQuizChange}
+                      />
+                    </div>
                   )}
                 </div>
               </div>
+            </motion.div>
+
+            {/* Question Creator */}
+            <motion.div 
+              className="card card-glass mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="card-header">
+                <h3 className="mb-0">❓ Add Question</h3>
+              </div>
+              <div className="card-body">
+                <div className="mb-3">
+                  <label htmlFor="questionText" className="form-label">Question *</label>
+                  <textarea
+                    className="form-control input-glass"
+                    id="questionText"
+                    name="questionText"
+                    value={currentQuestion.questionText}
+                    onChange={handleQuestionChange}
+                    placeholder="Enter your question"
+                    rows="2"
+                  ></textarea>
+                </div>
+
+                <div className="row">
+                  {[0, 1, 2, 3].map((index) => (
+                    <div key={index} className="col-md-6 mb-3">
+                      <label htmlFor={`option${index}`} className="form-label">Option {String.fromCharCode(65 + index)} *</label>
+                      <input
+                        type="text"
+                        className="form-control input-glass"
+                        id={`option${index}`}
+                        value={currentQuestion.options[index]}
+                        onChange={(e) => handleOptionChange(index, e.target.value)}
+                        placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                      />
+                      <div className="form-check mt-2">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="correctAnswer"
+                          id={`correctAnswer${index}`}
+                          checked={currentQuestion.correctAnswer === index}
+                          onChange={() => setCurrentQuestion(prev => ({ ...prev, correctAnswer: index }))}
+                        />
+                        <label className="form-check-label" htmlFor={`correctAnswer${index}`}>
+                          Mark as Correct Answer
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="row">
+                  <div className="col-md-12 mb-3">
+                    <label htmlFor="explanation" className="form-label">Explanation</label>
+                    <textarea
+                      className="form-control input-glass"
+                      id="explanation"
+                      name="explanation"
+                      value={currentQuestion.explanation}
+                      onChange={handleQuestionChange}
+                      placeholder="Explanation for the correct answer"
+                      rows="2"
+                    ></textarea>
+                    <div className="form-text">Help students understand why this is the correct answer</div>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="hint" className="form-label">Hint</label>
+                    <input
+                      type="text"
+                      className="form-control input-glass"
+                      id="hint"
+                      name="hint"
+                      value={currentQuestion.hint}
+                      onChange={handleQuestionChange}
+                      placeholder="Hint for this question (optional)"
+                    />
+                    <div className="form-text">Provide a clue to help students answer correctly</div>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="concept" className="form-label">Concept</label>
+                    <input
+                      type="text"
+                      className="form-control input-glass"
+                      id="concept"
+                      name="concept"
+                      value={currentQuestion.concept}
+                      onChange={handleQuestionChange}
+                      placeholder="Learning concept (optional)"
+                    />
+                    <div className="form-text">Identify the learning objective or concept</div>
+                  </div>
+                </div>
+
+                <button onClick={addQuestion} className="btn btn-gradient">
+                  <i className="bi bi-plus-circle me-2"></i>Add Question
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Questions List */}
+            {quizData.questions.length > 0 && (
+              <motion.div 
+                className="card card-glass mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="card-header d-flex justify-content-between align-items-center">
+                  <h3 className="mb-0">📝 Questions <span className="badge bg-primary ms-2">{quizData.questions.length}</span></h3>
+                </div>
+                <div className="card-body">
+                  <div className="list-group">
+                    {quizData.questions.map((question, index) => (
+                      <motion.div 
+                        key={index} 
+                        className="list-group-item list-group-item-action p-3 mb-2"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <div className="d-flex justify-content-between align-items-start">
+                          <div>
+                            <h5 className="mb-1">Question {index + 1}: {question.questionText.substring(0, 100)}{question.questionText.length > 100 ? '...' : ''}</h5>
+                            <div className="mt-2">
+                              {question.options.map((option, optIndex) => (
+                                <div key={optIndex} className="d-flex align-items-center mb-1">
+                                  <span className={`badge ${question.correctAnswer === optIndex ? 'bg-success' : 'bg-secondary'} me-2`}>
+                                    {String.fromCharCode(65 + optIndex)}
+                                  </span>
+                                  <span>{option.substring(0, 50)}{option.length > 50 ? '...' : ''}</span>
+                                </div>
+                              ))}
+                            </div>
+                            {question.explanation && (
+                              <small className="text-muted d-block mt-2">
+                                <strong>Explanation:</strong> {question.explanation.substring(0, 150)}{question.explanation.length > 150 ? '...' : ''}
+                              </small>
+                            )}
+                            {question.hint && (
+                              <small className="text-muted d-block">
+                                <strong>Hint:</strong> {question.hint}
+                              </small>
+                            )}
+                            {question.concept && (
+                              <small className="text-muted d-block">
+                                <strong>Concept:</strong> {question.concept}
+                              </small>
+                            )}
+                          </div>
+                          <button 
+                            onClick={() => removeQuestion(index)}
+                            className="btn btn-sm btn-danger ms-2"
+                          >
+                            <i className="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="card card-glass p-4 mb-4">
+              <div className="d-flex flex-wrap gap-3">
+                <button 
+                  onClick={() => saveQuiz(false)} 
+                  className="btn btn-outline-secondary flex-fill"
+                  disabled={loading}
+                >
+                  <i className="bi bi-save me-2"></i>Save as Draft
+                </button>
+                <button 
+                  onClick={previewQuiz} 
+                  className="btn btn-outline-info flex-fill"
+                  disabled={quizData.questions.length === 0}
+                >
+                  <i className="bi bi-eye me-2"></i>Preview Quiz
+                </button>
+                <button 
+                  onClick={() => saveQuiz(true)} 
+                  className="btn btn-gradient flex-fill"
+                  disabled={loading || !quizData.title.trim() || quizData.questions.length === 0}
+                >
+                  <i className="bi bi-send-check me-2"></i>Publish Quiz
+                </button>
+              </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            {/* Preview Modal */}
+            <AnimatePresence>
+              {showPreview && (
+                <motion.div 
+                  className="modal-backdrop fade show"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center p-3" style={{ zIndex: 1050 }}>
+                    <motion.div 
+                      className="modal-content card card-glass"
+                      initial={{ scale: 0.8 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0.8 }}
+                    >
+                      <div className="modal-header">
+                        <h5 className="modal-title">{quizData.title || 'Untitled Quiz'} Preview</h5>
+                        <button 
+                          onClick={() => setShowPreview(false)}
+                          className="btn-close btn-close-white"
+                          type="button"
+                        ></button>
+                      </div>
+                      <div className="modal-body">
+                        <p>{quizData.description || 'No description provided'}</p>
+                        <div className="d-flex flex-wrap gap-3 mb-3">
+                          <span className="badge bg-info">⏱️ {quizData.timer} min</span>
+                          <span className="badge bg-info">❓ {quizData.questions.length} questions</span>
+                          <span className="badge bg-info">📊 {quizData.difficulty}</span>
+                          {quizData.examMode && <span className="badge bg-warning">🔒 Exam Mode</span>}
+                        </div>
+                        <div className="preview-questions">
+                          {quizData.questions.slice(0, 3).map((question, index) => (
+                            <div key={index} className="mb-3">
+                              <h6>{index + 1}. {question.questionText}</h6>
+                              <div className="ps-3">
+                                {question.options.map((option, optIndex) => (
+                                  <div key={optIndex} className="form-check">
+                                    <input 
+                                      className="form-check-input" 
+                                      type="radio" 
+                                      disabled
+                                      checked={question.correctAnswer === optIndex}
+                                    />
+                                    <label className="form-check-label">
+                                      {String.fromCharCode(65 + optIndex)}. {option}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                          {quizData.questions.length > 3 && (
+                            <p className="text-muted">+ {quizData.questions.length - 3} more questions</p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
     </div>
   );

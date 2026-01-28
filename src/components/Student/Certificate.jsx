@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import apiService from '../../services/api';
-import './Certificate.css';
+import '../../bootstrap-theme.css';
 
 const Certificate = () => {
   const { resultId } = useParams();
@@ -56,18 +56,33 @@ const Certificate = () => {
 
   if (loading) {
     return (
-      <div className="certificate-container flex-center">
-        <div className="spinner"></div>
+      <div className="container-fluid p-0">
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+          <div className="text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-2 text-white">Generating certificate...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="certificate-container flex-center">
-        <div className="error-message">
-          <h2>Error</h2>
-          <p>{error}</p>
+      <div className="container-fluid p-0">
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+          <div className="card card-glass p-4 text-center">
+            <h2 className="gradient-text mb-3">Error</h2>
+            <p className="text-muted mb-4">{error}</p>
+            <button 
+              onClick={() => window.history.back()} 
+              className="btn btn-gradient"
+            >
+              ← Back
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -75,10 +90,18 @@ const Certificate = () => {
 
   if (!certificateData) {
     return (
-      <div className="certificate-container flex-center">
-        <div className="error-message">
-          <h2>Certificate Data Not Found</h2>
-          <p>Unable to generate certificate.</p>
+      <div className="container-fluid p-0">
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+          <div className="card card-glass p-4 text-center">
+            <h2 className="gradient-text mb-3">Certificate Data Not Found</h2>
+            <p className="text-muted mb-4">Unable to generate certificate.</p>
+            <button 
+              onClick={() => window.history.back()} 
+              className="btn btn-gradient"
+            >
+              ← Back
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -103,83 +126,101 @@ const Certificate = () => {
   }
 
   return (
-    <div className="certificate-container">
-      <motion.div 
-        className="certificate"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        {/* Decorative header */}
-        <div className="certificate-header">
-          <div className="certificate-logo">🏆</div>
-          <div className="certificate-title">
-            <h1>Certificate of Achievement</h1>
-            <p>Presented to</p>
-          </div>
-        </div>
-
-        {/* Recipient name */}
-        <div className="recipient-name" style={{ color: certificateColor }}>
-          {student.name || student.email}
-        </div>
-
-        {/* Certificate content */}
-        <div className="certificate-content">
-          <p>This certifies that the above named individual has successfully completed</p>
-          
-          <div className="quiz-info">
-            <h2>{quiz.title}</h2>
-            <p className="quiz-category">{quiz.category} • {quiz.difficulty} Level</p>
-          </div>
-          
-          <div className="performance-details">
-            <div className="score-card">
-              <div className="score-value">{percentage}%</div>
-              <div className="score-label">Score</div>
-            </div>
+    <div className="container-fluid p-0" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)' }}>
+      <div className="container py-4">
+        <div className="row justify-content-center">
+          <div className="col-lg-8">
+            <motion.div 
+              className="card card-glass border-0 shadow-lg"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="card-body p-5">
+                <div className="text-center mb-4">
+                  <div className="fs-1 mb-3">🏆</div>
+                  <h1 className="gradient-text mb-2">Certificate of Achievement</h1>
+                  <p className="text-muted mb-4">Presented to</p>
+                </div>
+                
+                <div className="text-center mb-4" style={{ color: certificateColor }}>
+                  <h2 className="display-5 fw-bold">{student.name || student.email}</h2>
+                </div>
+                
+                <div className="text-center mb-4">
+                  <p className="lead">This certifies that the above named individual has successfully completed</p>
+                  
+                  <div className="mb-4">
+                    <h3 className="h2 mb-2">{quiz.title}</h3>
+                    <p className="text-muted">{quiz.category} • {quiz.difficulty} Level</p>
+                  </div>
+                  
+                  <div className="row justify-content-center mb-4">
+                    <div className="col-md-4 mb-3">
+                      <div className="card border-0 bg-transparent">
+                        <div className="card-body text-center">
+                          <div className="display-4 fw-bold" style={{ color: certificateColor }}>{percentage}%</div>
+                          <div className="text-muted">Score</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="col-md-8">
+                      <div className="row">
+                        <div className="col-6">
+                          <div className="card border-0 bg-transparent">
+                            <div className="card-body text-center">
+                              <div className="h4 fw-bold">{result.correctAnswers}/{result.totalQuestions}</div>
+                              <div className="text-muted">Questions</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-6">
+                          <div className="card border-0 bg-transparent">
+                            <div className="card-body text-center">
+                              <div className="h4 fw-bold">{result.tabSwitches || 0}</div>
+                              <div className="text-muted">Tab Switches</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded p-3 mb-4" style={{ borderColor: certificateColor, color: certificateColor }}>
+                    <h4 className="mb-0">{certificateType}</h4>
+                  </div>
+                </div>
+                
+                <div className="row justify-content-between align-items-center mt-5 pt-4 border-top border-secondary">
+                  <div className="col-md-6">
+                    <div className="text-muted">
+                      <p className="mb-1">Issued on: {certificateData.issuedDate}</p>
+                      <p className="mb-0">ID: {certificateData.certificateId}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6 text-md-end">
+                    <div>
+                      <div className="border-bottom border-secondary mb-2" style={{ width: '200px', marginLeft: 'auto' }}></div>
+                      <p className="mb-0 text-muted">Authorized Signature</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
             
-            <div className="details-grid">
-              <div className="detail-item">
-                <span className="detail-label">Questions</span>
-                <span className="detail-value">{result.correctAnswers}/{result.totalQuestions}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">Tab Switches</span>
-                <span className="detail-value">{result.tabSwitches || 0}</span>
-              </div>
+            <div className="d-flex justify-content-center gap-3 mt-4">
+              <button onClick={downloadCertificate} className="btn btn-gradient">
+                <i className="bi bi-download me-2"></i>Download Certificate
+              </button>
+              <button 
+                onClick={() => window.history.back()} 
+                className="btn btn-outline-light"
+              >
+                <i className="bi bi-arrow-left me-2"></i>Back to Results
+              </button>
             </div>
           </div>
-          
-          <div className="certificate-type" style={{ borderColor: certificateColor, color: certificateColor }}>
-            {certificateType}
-          </div>
         </div>
-
-        {/* Footer */}
-        <div className="certificate-footer">
-          <div className="issue-details">
-            <p>Issued on: {certificateData.issuedDate}</p>
-            <p>ID: {certificateData.certificateId}</p>
-          </div>
-          
-          <div className="signature">
-            <div className="signature-line"></div>
-            <p>Authorized Signature</p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Action buttons */}
-      <div className="certificate-actions">
-        <button onClick={downloadCertificate} className="btn btn-primary">
-          🖨️ Download Certificate
-        </button>
-        <button 
-          onClick={() => window.history.back()} 
-          className="btn btn-secondary"
-        >
-          ← Back to Results
-        </button>
       </div>
     </div>
   );

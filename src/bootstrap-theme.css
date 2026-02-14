@@ -12,6 +12,7 @@
   -webkit-backdrop-filter: blur(10px) !important;
   box-shadow: var(--glass-shadow) !important;
   border-radius: 14px !important;
+  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease !important;
 }
 
 .sidebar-custom {
@@ -64,6 +65,13 @@
   color: var(--text-primary) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: 10px !important;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease !important;
+}
+
+.form-control:hover,
+.form-select:hover,
+.input-glass:hover {
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border-color)) !important;
 }
 
 .form-control::placeholder {
@@ -94,6 +102,8 @@
   font-weight: 600 !important;
   border: 1px solid transparent !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease !important;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn:hover {
@@ -109,6 +119,20 @@
 
 .btn-gradient:hover {
   filter: brightness(1.06);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--primary) 42%, transparent) !important;
+}
+
+.btn-gradient::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.3), transparent 70%);
+  transform: translateX(-110%);
+  transition: transform 0.6s ease;
+}
+
+.btn-gradient:hover::after {
+  transform: translateX(110%);
 }
 
 .btn-primary {
@@ -163,6 +187,7 @@
   color: var(--text-primary) !important;
   background: color-mix(in srgb, var(--primary) 16%, transparent) !important;
   border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  transform: translateX(3px);
 }
 
 .nav-link.active,
@@ -179,6 +204,10 @@
 .card-header {
   background: color-mix(in srgb, var(--primary) 10%, var(--surface-2)) !important;
   border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.card:hover {
+  transform: translateY(-2px);
 }
 
 .card-title,

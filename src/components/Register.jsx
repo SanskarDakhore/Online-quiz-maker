@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
+import ThemeSwitcher from './ThemeSwitcher';
 import '../bootstrap-theme.css';
 
 const Register = () => {
@@ -107,6 +108,9 @@ const Register = () => {
         </section>
 
         <section className="auth-panel card card-glass p-4 shadow rounded-4 w-100">
+          <div className="theme-inline">
+            <ThemeSwitcher compact />
+          </div>
           <h2 className="gradient-text text-center mb-2">Create Account</h2>
           <p className="text-secondary text-center mb-4">Join our quiz platform today</p>
           
@@ -116,8 +120,8 @@ const Register = () => {
             </div>
           )}
           
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
+          <form onSubmit={handleSubmit} className="auth-form-grid">
+            <div className="auth-field">
               <label htmlFor="fullName" className="form-label">Full Name</label>
               <input
                 type="text"
@@ -131,7 +135,7 @@ const Register = () => {
               {errors.fullName && <div className="invalid-feedback">{errors.fullName}</div>}
             </div>
             
-            <div className="mb-3">
+            <div className="auth-field">
               <label htmlFor="email" className="form-label">Email</label>
               <input
                 type="email"
@@ -145,7 +149,7 @@ const Register = () => {
               {errors.email && <div className="invalid-feedback">{errors.email}</div>}
             </div>
             
-            <div className="mb-3">
+            <div className="auth-field">
               <label htmlFor="password" className="form-label">Password</label>
               <input
                 type="password"
@@ -159,7 +163,7 @@ const Register = () => {
               {errors.password && <div className="invalid-feedback">{errors.password}</div>}
             </div>
             
-            <div className="mb-3">
+            <div className="auth-field">
               <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
               <input
                 type="password"
@@ -173,7 +177,7 @@ const Register = () => {
               {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
             </div>
             
-            <div className="mb-3">
+            <div className="auth-field">
               <label htmlFor="role" className="form-label">I am a...</label>
               <select
                 className="form-select input-glass"

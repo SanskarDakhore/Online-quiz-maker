@@ -2,29 +2,32 @@ import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 
 const OPTIONS = [
-  { id: 'aurora', label: 'Aurora' },
-  { id: 'daybreak', label: 'Daybreak' },
-  { id: 'ink', label: 'Ink' }
+  { id: 'aurora', label: 'Aurora', icon: 'bi-stars' },
+  { id: 'daybreak', label: 'Daybreak', icon: 'bi-sun' },
+  { id: 'ink', label: 'Ink', icon: 'bi-moon-stars' }
 ];
 
-const ThemeSwitcher = () => {
+const ThemeSwitcher = ({ compact = false }) => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="theme-switcher card-glass">
-      <label htmlFor="theme-select" className="theme-switcher-label">Theme</label>
-      <select
-        id="theme-select"
-        className="form-select input-glass"
-        value={theme}
-        onChange={(e) => setTheme(e.target.value)}
-      >
+    <div className={`theme-switcher ${compact ? 'compact' : ''}`}>
+      <span className="theme-switcher-label">Theme</span>
+      <div className="theme-switcher-tabs" role="tablist" aria-label="Theme Selector">
         {OPTIONS.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.label}
-          </option>
+          <button
+            key={option.id}
+            type="button"
+            className={`theme-tab ${theme === option.id ? 'active' : ''}`}
+            onClick={() => setTheme(option.id)}
+            aria-selected={theme === option.id}
+            title={option.label}
+          >
+            <i className={`bi ${option.icon}`}></i>
+            {!compact && <span>{option.label}</span>}
+          </button>
         ))}
-      </select>
+      </div>
     </div>
   );
 };

@@ -81,9 +81,18 @@ function App() {
       <Router>
         <AuthProvider>
           <div className="app">
-            <ThemeSwitcher />
+            <div className="app-toolbar">
+              <div className="app-toolbar-inner card-glass">
+                <div className="toolbar-brand">
+                  <span className="toolbar-dot"></span>
+                  <strong>QuizMaster</strong>
+                </div>
+                <ThemeSwitcher compact />
+              </div>
+            </div>
             <DatabaseActivation />
-            <Routes>
+            <div className="app-view">
+              <Routes>
             {/* Public Routes */}
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
@@ -186,7 +195,8 @@ function App() {
 
             {/* 404 Route */}
             <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
+              </Routes>
+            </div>
           </div>
         </AuthProvider>
       </Router>

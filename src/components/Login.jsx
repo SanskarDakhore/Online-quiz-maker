@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
+import ThemeSwitcher from './ThemeSwitcher';
 import '../bootstrap-theme.css';
 
 const Login = () => {
@@ -121,6 +122,9 @@ const Login = () => {
 
         <section className="auth-panel card card-glass shadow rounded-4 w-100">
           <div className="card-body p-4">
+            <div className="theme-inline">
+              <ThemeSwitcher compact />
+            </div>
             <h2 className="gradient-text text-center mb-2">Welcome Back</h2>
             <p className="text-secondary text-center mb-4">Login to continue your quiz journey</p>
             
@@ -170,8 +174,8 @@ const Login = () => {
                 <p className="text-muted">Login as a student to take quizzes and track your progress</p>
               </div>
               
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
+              <form onSubmit={handleSubmit} className="auth-form-grid">
+                <div className="auth-field">
                   <label htmlFor="email" className="form-label">Email</label>
                   <input
                     type="email"
@@ -185,7 +189,7 @@ const Login = () => {
                   {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                 </div>
                 
-                <div className="mb-3">
+                <div className="auth-field">
                   <label htmlFor="password" className="form-label">Password</label>
                   <input
                     type="password"
@@ -218,8 +222,8 @@ const Login = () => {
                 <p className="text-muted">Login as a teacher to create and manage quizzes</p>
               </div>
               
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
+              <form onSubmit={handleSubmit} className="auth-form-grid">
+                <div className="auth-field">
                   <label htmlFor="email" className="form-label">Email</label>
                   <input
                     type="email"
@@ -233,7 +237,7 @@ const Login = () => {
                   {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                 </div>
                 
-                <div className="mb-3">
+                <div className="auth-field">
                   <label htmlFor="password" className="form-label">Password</label>
                   <input
                     type="password"

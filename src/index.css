@@ -108,6 +108,48 @@ code {
   color: var(--text-primary);
 }
 
+.app-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1200;
+  padding: 0.75rem 0.95rem 0;
+}
+
+.app-toolbar-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0.55rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.toolbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.48rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.toolbar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.app-view {
+  animation: view-fade-in 0.45s ease;
+}
+
+@keyframes view-fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .auth-shell {
   position: relative;
 }
@@ -196,34 +238,74 @@ code {
   z-index: 2;
 }
 
-.workspace-main {
-  padding: 1.6rem;
+.auth-form-grid .auth-field {
+  margin-bottom: 0.95rem;
+}
+
+.auth-form-grid .form-control,
+.auth-form-grid .form-select {
+  min-height: 44px;
+}
+
+.theme-inline {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
 }
 
 .theme-switcher {
-  position: fixed;
-  top: 14px;
-  right: 14px;
-  z-index: 2000;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
-  width: 170px;
+  gap: 0.5rem;
+  min-height: 2.35rem;
 }
 
 .theme-switcher-label {
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   color: var(--text-secondary);
   margin: 0;
-  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-.theme-switcher .form-select {
-  min-width: 0;
-  padding: 0.35rem 1.75rem 0.35rem 0.6rem;
-  font-size: 0.82rem;
+.theme-switcher-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.theme-tab {
+  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--surface-2) 75%, transparent);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.34rem 0.58rem;
+  font-size: 0.77rem;
+  transition: all 0.24s ease;
+}
+
+.theme-tab:hover {
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.theme-tab.active {
+  color: white;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 10px 18px color-mix(in srgb, var(--primary) 36%, transparent);
+}
+
+.theme-switcher.compact .theme-tab {
+  padding: 0.35rem 0.5rem;
+}
+
+.theme-switcher.compact .theme-tab span {
+  display: none;
 }
 
 ::-webkit-scrollbar {
@@ -273,6 +355,15 @@ code {
   align-items: center;
 }
 
+@keyframes subtle-pulse {
+  0%, 100% { box-shadow: var(--glass-shadow); }
+  50% { box-shadow: 0 20px 44px color-mix(in srgb, var(--primary) 28%, transparent); }
+}
+
+.card-glass:hover {
+  animation: subtle-pulse 1.4s ease;
+}
+
 .db-activation-message {
   position: fixed;
   bottom: 16px;
@@ -312,10 +403,15 @@ code {
     display: none;
   }
 
-  .theme-switcher {
-    top: 10px;
-    right: 10px;
-    width: 154px;
-    padding: 7px 8px;
+  .app-toolbar {
+    padding: 0.55rem 0.6rem 0;
+  }
+
+  .app-toolbar-inner {
+    padding: 0.45rem 0.55rem;
+  }
+
+  .toolbar-brand strong {
+    font-size: 0.82rem;
   }
 }

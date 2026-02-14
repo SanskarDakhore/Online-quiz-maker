@@ -34,7 +34,7 @@ const StudentProfile = () => {
       setUserData(userDataResponse.user);
 
       // Process results data
-      const resultsData = resultsResponse.results || [];
+      const resultsData = Array.isArray(resultsResponse) ? resultsResponse : [];
       let totalScore = 0;
       let perfectCount = 0;
 
@@ -338,7 +338,7 @@ const StudentProfile = () => {
                       </thead>
                       <tbody>
                         {results.slice(0, 5).map((result) => (
-                          <tr key={result._id}>
+                          <tr key={result.resultId}>
                             <td>{result.quizTitle || 'Untitled Quiz'}</td>
                             <td>
                               <span className={`badge ${result.score >= 80 ? 'bg-success' : result.score >= 60 ? 'bg-warning' : 'bg-danger'}`}>
@@ -355,13 +355,7 @@ const StudentProfile = () => {
                 ) : (
                   <p className="text-center text-muted py-3 mb-0">No quiz attempts yet. Start taking quizzes to see your progress!</p>
                 )}
-                {results.length > 5 && (
-                  <div className="text-center mt-3">
-                    <Link to="/student/results" className="btn btn-outline-primary">
-                      View All Results ({results.length})
-                    </Link>
-                  </div>
-                )}
+                {results.length > 5 && <div className="text-center mt-3 text-muted">Showing latest 5 results</div>}
               </div>
             </motion.div>
           </div>

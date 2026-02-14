@@ -101,159 +101,173 @@ const Login = () => {
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center p-3" style={{background: 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)'}}>
-      <motion.div 
-        className="card card-glass p-4 shadow rounded-4 w-100" style={{ maxWidth: '450px' }}
+    <div className="auth-shell min-vh-100 d-flex align-items-center justify-content-center p-3">
+      <motion.div
+        className="auth-grid w-100"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="gradient-text text-center mb-2">Welcome Back</h2>
-        <p className="text-secondary text-center mb-4">Login to continue your quiz journey</p>
-        
-        {message && (
-          <div className={`alert ${message.includes('Failed') || message.includes('Cannot connect') || message.includes('Database connection') ? 'alert-danger' : 'alert-success'} fade show`} role="alert">
-            {message}
+        <section className="auth-hero card-glass">
+          <p className="auth-kicker">QuizMaster</p>
+          <h1>Build. Publish. Master learning.</h1>
+          <p>Teachers launch assessments quickly. Students learn with instant, structured feedback.</p>
+          <div className="auth-hero-points">
+            <span>Role-based dashboards</span>
+            <span>Secure result scoring</span>
+            <span>Exam mode + tracking</span>
           </div>
-        )}
-        
-        {/* Tab Navigation */}
-        <ul className="nav nav-tabs mb-4" id="authTab" role="tablist">
-          <li className="nav-item" role="presentation">
-            <button 
-              className={`nav-link ${activeTab === 'student' ? 'active' : ''}`}
-              id="student-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#student"
-              type="button"
-              role="tab"
-              aria-controls="student"
-              aria-selected={activeTab === 'student'}
-              onClick={() => setActiveTab('student')}
-            >
-              Student Login
-            </button>
-          </li>
-          <li className="nav-item" role="presentation">
-            <button 
-              className={`nav-link ${activeTab === 'admin' ? 'active' : ''}`}
-              id="teacher-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#teacher"
-              type="button"
-              role="tab"
-              aria-controls="teacher"
-              aria-selected={activeTab === 'admin'}
-              onClick={() => setActiveTab('admin')}
-            >
-              Teacher Login
-            </button>
-          </li>
-        </ul>
-        
-        <div className="tab-content" id="authTabContent">
+        </section>
+
+        <section className="auth-panel card card-glass shadow rounded-4 w-100">
+          <div className="card-body p-4">
+            <h2 className="gradient-text text-center mb-2">Welcome Back</h2>
+            <p className="text-secondary text-center mb-4">Login to continue your quiz journey</p>
+            
+            {message && (
+              <div className={`alert ${message.includes('Failed') || message.includes('Cannot connect') || message.includes('Database connection') ? 'alert-danger' : 'alert-success'} fade show`} role="alert">
+                {message}
+              </div>
+            )}
+            
+            <ul className="nav nav-tabs mb-4" id="authTab" role="tablist">
+              <li className="nav-item" role="presentation">
+                <button 
+                  className={`nav-link ${activeTab === 'student' ? 'active' : ''}`}
+                  id="student-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#student"
+                  type="button"
+                  role="tab"
+                  aria-controls="student"
+                  aria-selected={activeTab === 'student'}
+                  onClick={() => setActiveTab('student')}
+                >
+                  Student Login
+                </button>
+              </li>
+              <li className="nav-item" role="presentation">
+                <button 
+                  className={`nav-link ${activeTab === 'admin' ? 'active' : ''}`}
+                  id="teacher-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#teacher"
+                  type="button"
+                  role="tab"
+                  aria-controls="teacher"
+                  aria-selected={activeTab === 'admin'}
+                  onClick={() => setActiveTab('admin')}
+                >
+                  Teacher Login
+                </button>
+              </li>
+            </ul>
+            
+            <div className="tab-content" id="authTabContent">
           {/* Student Login Section */}
-          <div className={`tab-pane fade ${activeTab === 'student' ? 'show active' : ''}`} id="student" role="tabpanel" aria-labelledby="student-tab">
-            <div className="mb-3 text-center">
-              <p className="text-muted">Login as a student to take quizzes and track your progress</p>
-            </div>
-            
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label">Email</label>
-                <input
-                  type="email"
-                  className={`form-control input-glass ${errors.email ? 'is-invalid' : ''}`}
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter your student email"
-                />
-                {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+            <div className={`tab-pane fade ${activeTab === 'student' ? 'show active' : ''}`} id="student" role="tabpanel" aria-labelledby="student-tab">
+              <div className="mb-3 text-center">
+                <p className="text-muted">Login as a student to take quizzes and track your progress</p>
               </div>
               
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">Password</label>
-                <input
-                  type="password"
-                  className={`form-control input-glass ${errors.password ? 'is-invalid' : ''}`}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                />
-                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-              </div>
-              
-              <input type="hidden" name="role" value="student" />
+              <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label htmlFor="email" className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className={`form-control input-glass ${errors.email ? 'is-invalid' : ''}`}
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter your student email"
+                  />
+                  {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+                </div>
+                
+                <div className="mb-3">
+                  <label htmlFor="password" className="form-label">Password</label>
+                  <input
+                    type="password"
+                    className={`form-control input-glass ${errors.password ? 'is-invalid' : ''}`}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                  />
+                  {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+                </div>
+                
+                <input type="hidden" name="role" value="student" />
 
-              <button type="submit" className="btn btn-gradient w-100 py-2" disabled={loading}>
-                {loading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Logging in...
-                  </>
-                ) : 'Login as Student'}
-              </button>
-            </form>
-          </div>
+                <button type="submit" className="btn btn-gradient w-100 py-2" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Logging in...
+                    </>
+                  ) : 'Login as Student'}
+                </button>
+              </form>
+            </div>
           
-          {/* Teacher Login Section */}
-          <div className={`tab-pane fade ${activeTab === 'admin' ? 'show active' : ''}`} id="teacher" role="tabpanel" aria-labelledby="teacher-tab">
-            <div className="mb-3 text-center">
-              <p className="text-muted">Login as a teacher to create and manage quizzes</p>
+            {/* Teacher Login Section */}
+            <div className={`tab-pane fade ${activeTab === 'admin' ? 'show active' : ''}`} id="teacher" role="tabpanel" aria-labelledby="teacher-tab">
+              <div className="mb-3 text-center">
+                <p className="text-muted">Login as a teacher to create and manage quizzes</p>
+              </div>
+              
+              <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label htmlFor="email" className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className={`form-control input-glass ${errors.email ? 'is-invalid' : ''}`}
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter your teacher email"
+                  />
+                  {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+                </div>
+                
+                <div className="mb-3">
+                  <label htmlFor="password" className="form-label">Password</label>
+                  <input
+                    type="password"
+                    className={`form-control input-glass ${errors.password ? 'is-invalid' : ''}`}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                  />
+                  {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+                </div>
+                
+                <input type="hidden" name="role" value="teacher" />
+
+                <button type="submit" className="btn btn-gradient w-100 py-2" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Logging in...
+                    </>
+                  ) : 'Login as Teacher'}
+                </button>
+              </form>
+            </div>
             </div>
             
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label">Email</label>
-                <input
-                  type="email"
-                  className={`form-control input-glass ${errors.email ? 'is-invalid' : ''}`}
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter your teacher email"
-                />
-                {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-              </div>
-              
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">Password</label>
-                <input
-                  type="password"
-                  className={`form-control input-glass ${errors.password ? 'is-invalid' : ''}`}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                />
-                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-              </div>
-              
-              <input type="hidden" name="role" value="teacher" />
-
-              <button type="submit" className="btn btn-gradient w-100 py-2" disabled={loading}>
-                {loading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Logging in...
-                  </>
-                ) : 'Login as Teacher'}
-              </button>
-            </form>
+            <hr className="my-4" />
+            
+            <p className="text-center mb-0">
+              Don't have an account? <Link to="/register" className="text-decoration-none">Register here</Link>
+            </p>
           </div>
-        </div>
-        
-        <hr className="my-4" />
-        
-        <p className="text-center mb-0">
-          Don't have an account? <Link to="/register" className="text-decoration-none">Register here</Link>
-        </p>
+        </section>
       </motion.div>
     </div>
   );

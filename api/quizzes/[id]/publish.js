@@ -1,7 +1,6 @@
-// Vercel API route for publishing/unpublishing a quiz
 import Quiz from '../../../server/models/Quiz.js';
-import jwt from 'jsonwebtoken';
 import { connectToDatabase } from '../../../server/utils/connectDb.js';
+import { requireAuth, requireRole } from '../../_lib/auth.js';
 
 export default async function handler(req, res) {
   const { id } = req.query;
@@ -14,20 +13,10 @@ export default async function handler(req, res) {
     // Connect to database
     await connectToDatabase();
     
-    // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Access token required' });
-    }
-
-    const token = authHeader.split(' ')[1];
-
-    // Verify token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_jwt_secret');
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+    const user = await requireAuth(req, res);
+    if (!user) return;
+    if (!requireRole(user, 'teacher')) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
     }
 
     const { published } = req.body;
@@ -37,12 +26,12 @@ export default async function handler(req, res) {
     }
 
     // Find the quiz and check if the user is the creator
-    const quiz = await Quiz.findById(id);
+    const quiz = await Quiz.findOne({ quizId: id });
     if (!quiz) {
       return res.status(404).json({ error: 'Quiz not found' });
     }
 
-    if (quiz.creatorId.toString() !== decoded.userId.toString()) {
+    if (quiz.createdBy !== user.uid) {
       return res.status(403).json({ error: 'Not authorized to publish this quiz' });
     }
 
@@ -52,7 +41,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       message: `Quiz ${published ? 'published' : 'unpublished'} successfully`,
-      quizId: quiz._id,
+      quizId: quiz.quizId,
       published: quiz.published
     });
   } catch (error) {

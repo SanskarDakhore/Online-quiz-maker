@@ -7,6 +7,7 @@ import Login from './components/Login';
 import TeacherDashboard from './components/Teacher/TeacherDashboard';
 import QuizCreator from './components/Teacher/QuizCreator';
 import TeacherQuizzes from './components/Teacher/TeacherQuizzes';
+import TeacherQuizResults from './components/Teacher/TeacherQuizResults';
 import StudentQuizzes from './components/Student/StudentQuizzes';
 import QuizPlayer from './components/Student/QuizPlayer';
 import QuizResult from './components/Student/QuizResult';
@@ -14,6 +15,8 @@ import ResultPending from './components/Student/ResultPending';
 import Certificate from './components/Student/Certificate';
 import StudentProfile from './components/Student/StudentProfile';
 import DatabaseActivation from './components/DatabaseActivation';
+import ThemeSwitcher from './components/ThemeSwitcher';
+import { ThemeProvider } from './contexts/ThemeContext';
 import './index.css';
 
 // Home redirect component
@@ -74,11 +77,13 @@ const Home = () => {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <div className="app">
-          <DatabaseActivation />
-          <Routes>
+    <ThemeProvider>
+      <Router>
+        <AuthProvider>
+          <div className="app">
+            <ThemeSwitcher />
+            <DatabaseActivation />
+            <Routes>
             {/* Public Routes */}
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
@@ -114,6 +119,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="teacher">
                   <QuizCreator />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/teacher/results/:quizId" 
+              element={
+                <ProtectedRoute requiredRole="teacher">
+                  <TeacherQuizResults />
                 </ProtectedRoute>
               } 
             />
@@ -173,10 +186,11 @@ function App() {
 
             {/* 404 Route */}
             <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </div>
-      </AuthProvider>
-    </Router>
+            </Routes>
+          </div>
+        </AuthProvider>
+      </Router>
+    </ThemeProvider>
   );
 }
 

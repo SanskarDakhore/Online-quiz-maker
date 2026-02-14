@@ -47,6 +47,10 @@ const quizSchema = new mongoose.Schema({
       questionText: String,
       options: [String],
       correctAnswer: Number,
+      points: {
+        type: Number,
+        default: 1
+      },
       explanation: String,
       imageUrl: String,
       hint: String,

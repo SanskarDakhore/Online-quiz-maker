@@ -20,10 +20,19 @@ const checkDBConnection = (req, res, next) => {
 // Register new user
 router.post('/register', checkDBConnection, async (req, res) => {
   try {
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ error: 'JWT_SECRET is not configured on server' });
+    }
+
     const { email, password, fullName, role } = req.body;
+    const normalizedEmail = String(email || '').toLowerCase();
+
+    if (!['teacher', 'student'].includes(role)) {
+      return res.status(400).json({ error: 'Role must be teacher or student' });
+    }
     
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists with this email' });
     }
@@ -37,7 +46,7 @@ router.post('/register', checkDBConnection, async (req, res) => {
     const user = new User({
       uid,
       name: fullName,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
       role,
       badges: role === 'student' ? ['Quiz Rookie'] : []
@@ -48,7 +57,7 @@ router.post('/register', checkDBConnection, async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.uid, role: user.role },
-      process.env.JWT_SECRET || 'quizmaster_secret',
+      process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
     
@@ -70,11 +79,16 @@ router.post('/register', checkDBConnection, async (req, res) => {
 // Login user
 router.post('/login', checkDBConnection, async (req, res) => {
   try {
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ error: 'JWT_SECRET is not configured on server' });
+    }
+
     const { email, password } = req.body;
-    console.log('Login attempt for email:', email);
+    const normalizedEmail = String(email || '').toLowerCase();
+    console.log('Login attempt for email:', normalizedEmail);
     
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       console.log('User not found for email:', email);
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -92,7 +106,7 @@ router.post('/login', checkDBConnection, async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.uid, role: user.role },
-      process.env.JWT_SECRET || 'quizmaster_secret',
+      process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
     
@@ -115,6 +129,10 @@ router.post('/login', checkDBConnection, async (req, res) => {
 // Get current user
 router.get('/me', checkDBConnection, async (req, res) => {
   try {
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ error: 'JWT_SECRET is not configured on server' });
+    }
+
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
@@ -122,7 +140,7 @@ router.get('/me', checkDBConnection, async (req, res) => {
       return res.status(401).json({ error: 'Access token required' });
     }
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'quizmaster_secret');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findOne({ uid: decoded.userId });
     
     if (!user) {
@@ -140,6 +158,9 @@ router.get('/me', checkDBConnection, async (req, res) => {
     });
   } catch (error) {
     console.error('Get user error:', error);
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });

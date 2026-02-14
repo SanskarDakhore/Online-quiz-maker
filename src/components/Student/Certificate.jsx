@@ -24,7 +24,7 @@ const Certificate = () => {
         throw new Error('Result not found');
       }
       
-      const resultData = resultResponse.result;
+      const resultData = resultResponse;
       
       // Get current user data
       const currentUserResponse = await apiService.getCurrentUser();
@@ -177,7 +177,7 @@ const Certificate = () => {
                         <div className="col-6">
                           <div className="card border-0 bg-transparent">
                             <div className="card-body text-center">
-                              <div className="h4 fw-bold">{result.tabSwitches || 0}</div>
+                              <div className="h4 fw-bold">{result.tabSwitchCount || 0}</div>
                               <div className="text-muted">Tab Switches</div>
                             </div>
                           </div>

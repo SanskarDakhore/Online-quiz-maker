@@ -36,14 +36,11 @@ export const AuthProvider = ({ children }) => {
   // Login with email and password
   const login = async (email, password) => {
     try {
-      console.log('Attempting login with email:', email);
       const data = await apiService.login(email, password);
       const user = data.user;
-      console.log('Login successful. User:', user);
       
       // Create session for the user
       const session = sessionService.createSession(user.uid);
-      console.log('Created session:', session);
       
       // Store session ID in localStorage
       localStorage.setItem('current_session_id', session.sessionId);
@@ -51,11 +48,9 @@ export const AuthProvider = ({ children }) => {
       // Store current user in localStorage to prevent immediate redirects
       localStorage.setItem('current_user', JSON.stringify(user));
       
-      console.log('Setting currentUser and userRole in state');
       setCurrentUser(user);
       setUserRole(user.role);
       
-      console.log('Login function completed successfully');
       return data;
     } catch (error) {
       console.error('Email/Password login error:', error);
@@ -66,7 +61,6 @@ export const AuthProvider = ({ children }) => {
   // Logout
   const logout = async () => {
     try {
-      console.log('Logout function called');
       // Remove current session
       const sessionId = localStorage.getItem('current_session_id');
       if (currentUser && sessionId) {
@@ -80,11 +74,8 @@ export const AuthProvider = ({ children }) => {
       // Logout from API
       await apiService.logout();
       
-      console.log('Clearing currentUser and userRole state');
       setCurrentUser(null);
       setUserRole(null);
-      
-      console.log('Logout completed');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -120,11 +111,8 @@ export const AuthProvider = ({ children }) => {
     // This call is non-blocking and will silently fail if not configured
     (async () => {
       try {
-        console.log('Attempting server-side DB activation (non-blocking)');
-        await (await import('../services/api')).default.activateDb();
-      } catch (err) {
-        console.log('DB activation attempt failed or not configured:', err?.message || err);
-      }
+        await apiService.activateDb();
+      } catch {}
     })();
     
     // Check if user is already logged in
@@ -141,10 +129,7 @@ export const AuthProvider = ({ children }) => {
         
         // Still verify the user in the background
         getCurrentUser()
-          .catch((error) => {
-            console.log('Background user verification failed:', error);
-            // If verification fails, it will be handled by the getCurrentUser function
-          });
+          .catch(() => {});
       } else {
         getCurrentUser()
           .then(() => {
@@ -166,7 +151,6 @@ export const AuthProvider = ({ children }) => {
         // For now, we'll just check if it's still valid
         getCurrentUser().catch((error) => {
           console.log('Token refresh failed:', error);
-          // If token is invalid, logout
         });
       }
     }, 30 * 60 * 1000); // Check every 30 minutes

@@ -6,13 +6,49 @@ import { authenticateToken, authorizeRole } from '../middleware/auth.js';
 
 const router = express.Router();
 
+const serializeQuizForStudentList = (quiz) => ({
+  quizId: quiz.quizId,
+  title: quiz.title,
+  description: quiz.description || '',
+  category: quiz.category || 'General',
+  difficulty: quiz.difficulty || 'Medium',
+  timer: quiz.timer || 30,
+  questions: new Array((quiz.questions || []).length).fill(null),
+  published: !!quiz.published,
+  createdAt: quiz.createdAt
+});
+
+const serializeQuizForStudentPlay = (quiz) => ({
+  quizId: quiz.quizId,
+  title: quiz.title,
+  description: quiz.description || '',
+  category: quiz.category || 'General',
+  difficulty: quiz.difficulty || 'Medium',
+  timer: quiz.timer || 30,
+  timerPerQuestion: !!quiz.timerPerQuestion,
+  examMode: !!quiz.examMode,
+  resultReleaseMode: quiz.resultReleaseMode || 'immediate',
+  resultReleaseDate: quiz.resultReleaseDate || null,
+  questions: (quiz.questions || []).map((q) => ({
+    questionText: q.questionText,
+    options: q.options || [],
+    explanation: q.explanation || '',
+    imageUrl: q.imageUrl || '',
+    hint: q.hint || '',
+    concept: q.concept || '',
+    points: q.points || 1
+  })),
+  published: !!quiz.published,
+  createdAt: quiz.createdAt
+});
+
 // Get all published quizzes (for students)
 router.get('/', authenticateToken, async (req, res) => {
   try {
     console.log('Fetching published quizzes for user:', req.user.email, req.user.role);
     const quizzes = await Quiz.find({ published: true }).sort({ createdAt: -1 });
     console.log('Found', quizzes.length, 'published quizzes');
-    res.json(quizzes);
+    res.json(quizzes.map(serializeQuizForStudentList));
   } catch (error) {
     console.error('Error fetching quizzes:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -44,7 +80,11 @@ router.get('/:quizId', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
     
-    res.json(quiz);
+    if (req.user.role === 'teacher' && quiz.createdBy === req.user.uid) {
+      return res.json(quiz);
+    }
+
+    res.json(serializeQuizForStudentPlay(quiz));
   } catch (error) {
     console.error('Error fetching quiz:', error);
     res.status(500).json({ error: 'Internal server error' });

@@ -1,7 +1,8 @@
-// Vercel API route for getting a specific result by ID
 import Result from '../../server/models/Result.js';
-import jwt from 'jsonwebtoken';
+import Quiz from '../../server/models/Quiz.js';
 import { connectToDatabase } from '../../server/utils/connectDb.js';
+import { requireAuth } from '../_lib/auth.js';
+import { serializeResult } from '../_lib/serializers.js';
 
 export default async function handler(req, res) {
   const { id } = req.query;
@@ -11,46 +12,33 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Connect to database
     await connectToDatabase();
-    
-    // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Access token required' });
-    }
+    const user = await requireAuth(req, res);
+    if (!user) return;
 
-    const token = authHeader.split(' ')[1];
+    const result = await Result.findOne({ resultId: id });
+    if (!result) return res.status(404).json({ error: 'Result not found' });
 
-    // Verify token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_jwt_secret');
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
-    }
+    const quiz = await Quiz.findOne({ quizId: result.quizId });
+    if (!quiz) return res.status(404).json({ error: 'Quiz not found for this result' });
 
-    // Get result by ID
-    const result = await Result.findById(id).populate('quizId', 'title description');
-    
-    if (!result) {
-      return res.status(404).json({ error: 'Result not found' });
-    }
+    const canAccess =
+      (user.role === 'student' && result.studentId === user.uid) ||
+      (user.role === 'teacher' && quiz.createdBy === user.uid);
 
-    // Check if the user owns this result
-    if (result.userId.toString() !== decoded.userId.toString()) {
+    if (!canAccess) {
       return res.status(403).json({ error: 'Not authorized to access this result' });
     }
-    
-    res.status(200).json(result);
+
+    return res.status(200).json(serializeResult(result, quiz));
   } catch (error) {
     console.error('Get result error:', error);
-    res.status(500).json({ error: 'Server error getting result' });
+    return res.status(500).json({ error: 'Server error getting result' });
   }
 }
 
 export const config = {
   api: {
-    externalResolver: true,
-  },
+    externalResolver: true
+  }
 };

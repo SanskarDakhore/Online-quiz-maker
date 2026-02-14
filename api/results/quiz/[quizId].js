@@ -1,7 +1,9 @@
-// Vercel API route for getting results for a specific quiz
 import Result from '../../../server/models/Result.js';
-import jwt from 'jsonwebtoken';
+import Quiz from '../../../server/models/Quiz.js';
+import User from '../../../server/models/User.js';
 import { connectToDatabase } from '../../../server/utils/connectDb.js';
+import { requireAuth, requireRole } from '../../_lib/auth.js';
+import { serializeResult } from '../../_lib/serializers.js';
 
 export default async function handler(req, res) {
   const { quizId } = req.query;
@@ -11,40 +13,42 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Connect to database
     await connectToDatabase();
-    
-    // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Access token required' });
+    const user = await requireAuth(req, res);
+    if (!user) return;
+    if (!requireRole(user, 'teacher')) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
     }
 
-    const token = authHeader.split(' ')[1];
-
-    // Verify token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_jwt_secret');
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+    const quiz = await Quiz.findOne({ quizId });
+    if (!quiz || quiz.createdBy !== user.uid) {
+      return res.status(404).json({ error: 'Quiz not found or access denied' });
     }
 
-    // Get results for the specific quiz
-    const results = await Result.find({ quizId: quizId }).populate('userId', 'fullName email');
-    
-    // Additional check: ensure the user is the creator of the quiz or an admin
-    // For now, we'll allow access if the user is authenticated
-    
-    res.status(200).json(results);
+    const results = await Result.find({ quizId }).sort({ timestamp: -1 });
+    const studentIds = [...new Set(results.map((r) => r.studentId))];
+    const students = await User.find({ uid: { $in: studentIds } });
+    const studentMap = new Map(students.map((s) => [s.uid, s]));
+
+    const payload = results.map((result) => {
+      const base = serializeResult(result, quiz);
+      const student = studentMap.get(result.studentId);
+      return {
+        ...base,
+        studentName: student?.name || 'Unknown Student',
+        studentEmail: student?.email || null
+      };
+    });
+
+    return res.status(200).json(payload);
   } catch (error) {
     console.error('Get quiz results error:', error);
-    res.status(500).json({ error: 'Server error getting quiz results' });
+    return res.status(500).json({ error: 'Server error getting quiz results' });
   }
 }
 
 export const config = {
   api: {
-    externalResolver: true,
-  },
+    externalResolver: true
+  }
 };

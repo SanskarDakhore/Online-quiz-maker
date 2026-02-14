@@ -60,7 +60,7 @@ const QuizResult = () => {
         return;
       }
 
-      const resultData = resultResponse.result;
+      const resultData = resultResponse;
       setResult(resultData);
 
       // Set quiz data (it's included in the result)
@@ -208,7 +208,7 @@ const QuizResult = () => {
                 {result.autoSubmitReason && result.autoSubmitReason !== 'Quiz submitted' && (
                   <div className="alert alert-warning mb-3">
                     <p className="mb-1">⚠️ Quiz was auto-submitted: {result.autoSubmitReason}</p>
-                    <p className="mb-0">Tab switches detected: {result.tabSwitches}</p>
+                    <p className="mb-0">Tab switches detected: {result.tabSwitchCount}</p>
                   </div>
                 )}
 
@@ -219,7 +219,7 @@ const QuizResult = () => {
                   <Link to="/student/profile" className="btn btn-outline-light">
                     <i className="bi bi-person me-2"></i>View Profile
                   </Link>
-                  <Link to="/student/certificate/{resultId}" className="btn btn-outline-success">
+                  <Link to={`/student/certificate/${resultId}`} className="btn btn-outline-success">
                     <i className="bi bi-award me-2"></i>Download Certificate
                   </Link>
                 </div>
@@ -252,7 +252,7 @@ const QuizResult = () => {
                         <div className="fs-4 me-3">⏱️</div>
                         <div className="flex-grow-1">
                           <div className="fw-bold">Time Taken</div>
-                          <div className="text-muted">{Math.round(result.timeTaken / 60)} min</div>
+                      <div className="text-muted">{result.timeTaken ? Math.round(result.timeTaken / 60) : 0} min</div>
                         </div>
                       </div>
                       
@@ -260,7 +260,7 @@ const QuizResult = () => {
                         <div className="fs-4 me-3">🔄</div>
                         <div className="flex-grow-1">
                           <div className="fw-bold">Tab Switches</div>
-                          <div className="text-muted">{result.tabSwitches}</div>
+                          <div className="text-muted">{result.tabSwitchCount}</div>
                         </div>
                       </div>
                     </div>
@@ -282,7 +282,7 @@ const QuizResult = () => {
                   </div>
                   <div className="card-body">
                     <div className="accordion" id="questionReviewAccordion">
-                      {result.answers.map((userAnswer, index) => {
+                      {(result.answers || []).map((userAnswer, index) => {
                         const question = quiz.questions[index];
                         const isCorrect = userAnswer !== null && userAnswer === question?.correctAnswer;
                         

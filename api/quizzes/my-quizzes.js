@@ -1,7 +1,7 @@
-// Vercel API route for getting user's own quizzes
 import Quiz from '../../server/models/Quiz.js';
-import jwt from 'jsonwebtoken';
 import { connectToDatabase } from '../../server/utils/connectDb.js';
+import { requireAuth, requireRole } from '../_lib/auth.js';
+import { serializeQuizForTeacher } from '../_lib/serializers.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -12,26 +12,16 @@ export default async function handler(req, res) {
     // Connect to database
     await connectToDatabase();
     
-    // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Access token required' });
-    }
-
-    const token = authHeader.split(' ')[1];
-
-    // Verify token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_jwt_secret');
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+    const user = await requireAuth(req, res);
+    if (!user) return;
+    if (!requireRole(user, 'teacher')) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
     }
 
     // Get quizzes created by the user
-    const quizzes = await Quiz.find({ creatorId: decoded.userId });
+    const quizzes = await Quiz.find({ createdBy: user.uid }).sort({ createdAt: -1 });
     
-    res.status(200).json(quizzes);
+    res.status(200).json(quizzes.map(serializeQuizForTeacher));
   } catch (error) {
     console.error('Get my quizzes error:', error);
     res.status(500).json({ error: 'Server error getting user quizzes' });

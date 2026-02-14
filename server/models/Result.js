@@ -18,6 +18,10 @@ const resultSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  baseScore: {
+    type: Number,
+    default: null
+  },
   correctAnswers: {
     type: Number,
     required: true

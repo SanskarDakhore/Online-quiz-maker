@@ -86,16 +86,16 @@ const StudentProfile = () => {
               <h3 className="gradient-text mb-1">QuizMaster</h3>
               <small className="text-muted">Student</small>
             </div>
-            <nav className="nav flex-column mb-4">
+            <nav className="nav flex-column mb-4 sidebar-nav">
               <Link to="/student/quizzes" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/student/quizzes' ? 'active bg-primary' : ''}`}>
-                <i className="bi bi-book me-2"></i> Available Quizzes
+                <i className="bi bi-book nav-icon"></i><span className="nav-label">Available Quizzes</span>
               </Link>
               <Link to="/student/profile" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/student/profile' ? 'active bg-primary' : ''}`}>
-                <i className="bi bi-person me-2"></i> Profile
+                <i className="bi bi-person nav-icon"></i><span className="nav-label">Profile</span>
               </Link>
             </nav>
-            <button onClick={logout} className="btn btn-danger w-100">
-              <i className="bi bi-door-open me-2"></i> Logout
+            <button onClick={logout} className="btn btn-danger w-100 sidebar-logout-btn">
+              <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
             </button>
           </div>
           
@@ -139,16 +139,16 @@ const StudentProfile = () => {
               <h3 className="gradient-text mb-1">QuizMaster</h3>
               <small className="text-muted">Student</small>
             </div>
-            <nav className="nav flex-column mb-4">
+            <nav className="nav flex-column mb-4 sidebar-nav">
               <Link to="/student/quizzes" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/student/quizzes' ? 'active bg-primary' : ''}`}>
-                <i className="bi bi-book me-2"></i> Available Quizzes
+                <i className="bi bi-book nav-icon"></i><span className="nav-label">Available Quizzes</span>
               </Link>
               <Link to="/student/profile" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/student/profile' ? 'active bg-primary' : ''}`}>
-                <i className="bi bi-person me-2"></i> Profile
+                <i className="bi bi-person nav-icon"></i><span className="nav-label">Profile</span>
               </Link>
             </nav>
-            <button onClick={logout} className="btn btn-danger w-100">
-              <i className="bi bi-door-open me-2"></i> Logout
+            <button onClick={logout} className="btn btn-danger w-100 sidebar-logout-btn">
+              <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
             </button>
           </div>
           
@@ -200,17 +200,17 @@ const StudentProfile = () => {
             <small className="text-muted">Student</small>
           </div>
           
-          <nav className="nav flex-column mb-4">
+          <nav className="nav flex-column mb-4 sidebar-nav">
             <Link to="/student/quizzes" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/student/quizzes' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-book me-2"></i> Available Quizzes
+              <i className="bi bi-book nav-icon"></i><span className="nav-label">Available Quizzes</span>
             </Link>
             <Link to="/student/profile" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/student/profile' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-person me-2"></i> Profile
+              <i className="bi bi-person nav-icon"></i><span className="nav-label">Profile</span>
             </Link>
           </nav>
           
-          <button onClick={logout} className="btn btn-danger w-100">
-            <i className="bi bi-door-open me-2"></i> Logout
+          <button onClick={logout} className="btn btn-danger w-100 sidebar-logout-btn">
+            <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
           </button>
         </div>
         
@@ -375,3 +375,7 @@ const StudentProfile = () => {
 };
 
 export default StudentProfile;
+
+
+
+

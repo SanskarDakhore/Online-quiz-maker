@@ -183,17 +183,17 @@ const TeacherDashboard = () => {
             </div>
             <nav className="nav flex-column">
               <div className="nav-link disabled text-white bg-primary rounded py-2 px-3 mb-1">
-                <i className="bi bi-speedometer2 me-2"></i> Dashboard
+                <i className="bi bi-speedometer2 nav-icon"></i><span className="nav-label">Dashboard</span>
               </div>
               <div className="nav-link disabled text-white rounded py-2 px-3 mb-1">
-                <i className="bi bi-journal-text me-2"></i> My Quizzes
+                <i className="bi bi-journal-text nav-icon"></i><span className="nav-label">My Quizzes</span>
               </div>
               <div className="nav-link disabled text-white rounded py-2 px-3 mb-1">
-                <i className="bi bi-plus-circle me-2"></i> Create Quiz
+                <i className="bi bi-plus-circle nav-icon"></i><span className="nav-label">Create Quiz</span>
               </div>
             </nav>
-            <button className="btn btn-danger w-100 mt-3" disabled>
-              <i className="bi bi-door-open me-2"></i> Logout
+            <button className="btn btn-danger w-100 sidebar-logout-btn mt-3" disabled>
+              <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
             </button>
           </div>
           
@@ -225,17 +225,17 @@ const TeacherDashboard = () => {
             </div>
             <nav className="nav flex-column">
               <Link to="/teacher/dashboard" className="nav-link text-white active">
-                <i className="bi bi-speedometer2 me-2"></i> Dashboard
+                <i className="bi bi-speedometer2 nav-icon"></i><span className="nav-label">Dashboard</span>
               </Link>
               <Link to="/teacher/quizzes" className="nav-link text-white">
-                <i className="bi bi-journal-text me-2"></i> My Quizzes
+                <i className="bi bi-journal-text nav-icon"></i><span className="nav-label">My Quizzes</span>
               </Link>
               <Link to="/teacher/create-quiz" className="nav-link text-white">
-                <i className="bi bi-plus-circle me-2"></i> Create Quiz
+                <i className="bi bi-plus-circle nav-icon"></i><span className="nav-label">Create Quiz</span>
               </Link>
             </nav>
-            <button onClick={handleLogout} className="btn btn-danger w-100 mt-3">
-              <i className="bi bi-door-open me-2"></i> Logout
+            <button onClick={handleLogout} className="btn btn-danger w-100 sidebar-logout-btn mt-3">
+              <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
             </button>
           </div>
           
@@ -291,20 +291,20 @@ const TeacherDashboard = () => {
             )}
           </div>
           
-          <nav className="nav flex-column mb-4">
+          <nav className="nav flex-column mb-4 sidebar-nav">
             <Link to="/teacher/dashboard" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/dashboard' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-speedometer2 me-2"></i> Dashboard
+              <i className="bi bi-speedometer2 nav-icon"></i><span className="nav-label">Dashboard</span>
             </Link>
             <Link to="/teacher/quizzes" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/quizzes' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-journal-text me-2"></i> My Quizzes
+              <i className="bi bi-journal-text nav-icon"></i><span className="nav-label">My Quizzes</span>
             </Link>
             <Link to="/teacher/create-quiz" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/create-quiz' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-plus-circle me-2"></i> Create Quiz
+              <i className="bi bi-plus-circle nav-icon"></i><span className="nav-label">Create Quiz</span>
             </Link>
           </nav>
           
-          <button onClick={handleLogout} className="btn btn-danger w-100">
-            <i className="bi bi-door-open me-2"></i> Logout
+          <button onClick={handleLogout} className="btn btn-danger w-100 sidebar-logout-btn">
+            <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
           </button>
         </div>
         
@@ -533,3 +533,6 @@ const TeacherDashboard = () => {
 };
 
 export default TeacherDashboard;
+
+
+

@@ -7,8 +7,26 @@ const OPTIONS = [
   { id: 'ink', label: 'Ink', icon: 'bi-moon-stars' }
 ];
 
-const ThemeSwitcher = ({ compact = false }) => {
-  const { theme, setTheme } = useTheme();
+const ThemeSwitcher = ({ compact = false, single = false }) => {
+  const { theme, setTheme, themes } = useTheme();
+
+  if (single) {
+    const currentIndex = themes.indexOf(theme);
+    const nextTheme = themes[(currentIndex + 1) % themes.length];
+    const active = OPTIONS.find((option) => option.id === theme) || OPTIONS[0];
+
+    return (
+      <button
+        type="button"
+        className="theme-cycle-btn"
+        onClick={() => setTheme(nextTheme)}
+        title={`Theme: ${active.label}`}
+        aria-label={`Switch theme, current ${active.label}`}
+      >
+        <i className={`bi ${active.icon}`}></i>
+      </button>
+    );
+  }
 
   return (
     <div className={`theme-switcher ${compact ? 'compact' : ''}`}>

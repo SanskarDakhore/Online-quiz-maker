@@ -103,19 +103,19 @@ const TeacherQuizzes = () => {
               <h3 className="gradient-text mb-1">QuizMaster</h3>
               <small className="text-muted">Teacher</small>
             </div>
-            <nav className="nav flex-column mb-4">
+            <nav className="nav flex-column mb-4 sidebar-nav">
               <Link to="/teacher/dashboard" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/dashboard' ? 'active bg-primary' : ''}`}>
-                <i className="bi bi-speedometer2 me-2"></i> Dashboard
+                <i className="bi bi-speedometer2 nav-icon"></i><span className="nav-label">Dashboard</span>
               </Link>
               <Link to="/teacher/quizzes" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/quizzes' ? 'active bg-primary' : ''}`}>
-                <i className="bi bi-journal-text me-2"></i> My Quizzes
+                <i className="bi bi-journal-text nav-icon"></i><span className="nav-label">My Quizzes</span>
               </Link>
               <Link to="/teacher/create-quiz" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/create-quiz' ? 'active bg-primary' : ''}`}>
-                <i className="bi bi-plus-circle me-2"></i> Create Quiz
+                <i className="bi bi-plus-circle nav-icon"></i><span className="nav-label">Create Quiz</span>
               </Link>
             </nav>
-            <button onClick={logout} className="btn btn-danger w-100">
-              <i className="bi bi-door-open me-2"></i> Logout
+            <button onClick={logout} className="btn btn-danger w-100 sidebar-logout-btn">
+              <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
             </button>
           </div>
           
@@ -167,20 +167,20 @@ const TeacherQuizzes = () => {
             <small className="text-muted">Teacher</small>
           </div>
           
-          <nav className="nav flex-column mb-4">
+          <nav className="nav flex-column mb-4 sidebar-nav">
             <Link to="/teacher/dashboard" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/dashboard' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-speedometer2 me-2"></i> Dashboard
+              <i className="bi bi-speedometer2 nav-icon"></i><span className="nav-label">Dashboard</span>
             </Link>
             <Link to="/teacher/quizzes" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/quizzes' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-journal-text me-2"></i> My Quizzes
+              <i className="bi bi-journal-text nav-icon"></i><span className="nav-label">My Quizzes</span>
             </Link>
             <Link to="/teacher/create-quiz" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/create-quiz' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-plus-circle me-2"></i> Create Quiz
+              <i className="bi bi-plus-circle nav-icon"></i><span className="nav-label">Create Quiz</span>
             </Link>
           </nav>
           
-          <button onClick={logout} className="btn btn-danger w-100">
-            <i className="bi bi-door-open me-2"></i> Logout
+          <button onClick={logout} className="btn btn-danger w-100 sidebar-logout-btn">
+            <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
           </button>
         </div>
         
@@ -333,3 +333,7 @@ const TeacherQuizzes = () => {
 };
 
 export default TeacherQuizzes;
+
+
+
+

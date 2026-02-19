@@ -1,4 +1,10 @@
-const ENV_API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
+const normalizeApiBase = (raw) => {
+  const trimmed = (raw || '').trim().replace(/\/+$/, '');
+  if (!trimmed) return '';
+  return /\/api$/i.test(trimmed) ? trimmed : `${trimmed}/api`;
+};
+
+const ENV_API_BASE_URL = normalizeApiBase(import.meta.env.VITE_API_BASE_URL);
 const IS_LOCAL =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');

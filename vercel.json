@@ -1,0 +1,72 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "backend/api/health.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/auth/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/quizzes/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/quizzes/my-quizzes.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/quizzes/[id].js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/quizzes/[id]/publish.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/results/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/results/my-results.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/results/[id].js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/results/quiz/[quizId].js",
+      "use": "@vercel/node"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/backend/api/$1"
+    },
+    {
+      "source": "/teacher/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/student/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
+}

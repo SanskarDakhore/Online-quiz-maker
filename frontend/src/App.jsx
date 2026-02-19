@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Register from './components/Register';
@@ -75,129 +75,140 @@ const Home = () => {
   return <Navigate to="/login" />;
 };
 
+const AppShell = () => {
+  const location = useLocation();
+  const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
+
+  return (
+    <div className="app">
+      {!isAuthRoute && (
+        <div className="app-toolbar">
+          <div className="app-toolbar-inner card-glass">
+            <div className="toolbar-brand">
+              <span className="toolbar-dot"></span>
+              <strong>QuizMaster</strong>
+            </div>
+            <ThemeSwitcher compact />
+          </div>
+        </div>
+      )}
+      <DatabaseActivation />
+      <div className="app-view">
+        <Routes>
+      {/* Public Routes */}
+      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Home />} />
+
+      {/* Teacher Routes */}
+      <Route 
+        path="/teacher/dashboard" 
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <TeacherDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/teacher/quizzes" 
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <TeacherQuizzes />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/teacher/create-quiz" 
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <QuizCreator />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/teacher/edit-quiz/:quizId" 
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <QuizCreator />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/teacher/results/:quizId" 
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <TeacherQuizResults />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Student Routes */}
+      <Route 
+        path="/student/quizzes" 
+        element={
+          <ProtectedRoute requiredRole="student">
+            <StudentQuizzes />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/student/quiz/:quizId" 
+        element={
+          <ProtectedRoute requiredRole="student">
+            <QuizPlayer />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/student/result/:resultId" 
+        element={
+          <ProtectedRoute requiredRole="student">
+            <QuizResult />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/student/result-pending/:resultId" 
+        element={
+          <ProtectedRoute requiredRole="student">
+            <ResultPending />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/student/certificate/:resultId" 
+        element={
+          <ProtectedRoute requiredRole="student">
+            <Certificate />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/student/profile" 
+        element={
+          <ProtectedRoute requiredRole="student">
+            <StudentProfile />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* 404 Route */}
+      <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   return (
     <ThemeProvider>
       <Router>
         <AuthProvider>
-          <div className="app">
-            <div className="app-toolbar">
-              <div className="app-toolbar-inner card-glass">
-                <div className="toolbar-brand">
-                  <span className="toolbar-dot"></span>
-                  <strong>QuizMaster</strong>
-                </div>
-                <ThemeSwitcher compact />
-              </div>
-            </div>
-            <DatabaseActivation />
-            <div className="app-view">
-              <Routes>
-            {/* Public Routes */}
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Home />} />
-
-            {/* Teacher Routes */}
-            <Route 
-              path="/teacher/dashboard" 
-              element={
-                <ProtectedRoute requiredRole="teacher">
-                  <TeacherDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/teacher/quizzes" 
-              element={
-                <ProtectedRoute requiredRole="teacher">
-                  <TeacherQuizzes />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/teacher/create-quiz" 
-              element={
-                <ProtectedRoute requiredRole="teacher">
-                  <QuizCreator />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/teacher/edit-quiz/:quizId" 
-              element={
-                <ProtectedRoute requiredRole="teacher">
-                  <QuizCreator />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/teacher/results/:quizId" 
-              element={
-                <ProtectedRoute requiredRole="teacher">
-                  <TeacherQuizResults />
-                </ProtectedRoute>
-              } 
-            />
-
-            {/* Student Routes */}
-            <Route 
-              path="/student/quizzes" 
-              element={
-                <ProtectedRoute requiredRole="student">
-                  <StudentQuizzes />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/student/quiz/:quizId" 
-              element={
-                <ProtectedRoute requiredRole="student">
-                  <QuizPlayer />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/student/result/:resultId" 
-              element={
-                <ProtectedRoute requiredRole="student">
-                  <QuizResult />
-                </ProtectedRoute>
-              } 
-            />
-
-            <Route 
-              path="/student/result-pending/:resultId" 
-              element={
-                <ProtectedRoute requiredRole="student">
-                  <ResultPending />
-                </ProtectedRoute>
-              } 
-            />
-
-            <Route 
-              path="/student/certificate/:resultId" 
-              element={
-                <ProtectedRoute requiredRole="student">
-                  <Certificate />
-                </ProtectedRoute>
-              } 
-            />
-
-            <Route 
-              path="/student/profile" 
-              element={
-                <ProtectedRoute requiredRole="student">
-                  <StudentProfile />
-                </ProtectedRoute>
-              } 
-            />
-
-            {/* 404 Route */}
-            <Route path="*" element={<Navigate to="/" />} />
-              </Routes>
-            </div>
-          </div>
+          <AppShell />
         </AuthProvider>
       </Router>
     </ThemeProvider>

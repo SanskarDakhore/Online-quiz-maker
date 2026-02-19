@@ -8,18 +8,47 @@
   background: var(--glass-bg) !important;
   border: 1px solid var(--glass-border) !important;
   color: var(--text-primary) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   box-shadow: var(--glass-shadow) !important;
-  border-radius: 14px !important;
+  border-radius: 12px !important;
   transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease !important;
 }
 
 .sidebar-custom {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 96%, transparent), var(--surface)) !important;
-  border-right: 1px solid color-mix(in srgb, var(--primary) 20%, transparent) !important;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 90%, transparent), color-mix(in srgb, var(--surface) 95%, transparent)) !important;
+  border-right: 1px solid color-mix(in srgb, var(--primary) 14%, transparent) !important;
   padding-top: 1rem !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.sidebar-custom::before,
+.sidebar-custom::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 28px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.sidebar-custom::before {
+  top: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-primary) 48%, transparent), transparent);
+}
+
+.sidebar-custom::after {
+  bottom: 0;
+  background: linear-gradient(0deg, color-mix(in srgb, var(--bg-primary) 48%, transparent), transparent);
+}
+
+.sidebar-custom > * {
+  position: relative;
+  z-index: 1;
 }
 
 .gradient-text {
@@ -111,15 +140,15 @@
 }
 
 .btn-gradient {
-  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 88%, #ffffff), var(--secondary)) !important;
   color: white !important;
   border: 0 !important;
-  box-shadow: 0 10px 20px color-mix(in srgb, var(--primary) 38%, transparent) !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--primary) 30%, transparent) !important;
 }
 
 .btn-gradient:hover {
   filter: brightness(1.06);
-  box-shadow: 0 12px 24px color-mix(in srgb, var(--primary) 42%, transparent) !important;
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--primary) 34%, transparent) !important;
 }
 
 .btn-gradient::after {
@@ -181,20 +210,23 @@
 .nav-link {
   color: var(--text-secondary) !important;
   border: 1px solid transparent;
+  border-radius: 10px !important;
+  transition: all 0.24s ease !important;
 }
 
 .nav-link:hover {
   color: var(--text-primary) !important;
-  background: color-mix(in srgb, var(--primary) 16%, transparent) !important;
-  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
-  transform: translateX(3px);
+  background: color-mix(in srgb, var(--primary) 12%, transparent) !important;
+  border-color: color-mix(in srgb, var(--primary) 16%, transparent);
+  transform: translateX(2px);
 }
 
 .nav-link.active,
 .nav-link.active.bg-primary {
   color: white !important;
-  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 90%, white), var(--secondary)) !important;
   border-color: transparent !important;
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--primary) 24%, transparent) !important;
 }
 
 .col-md-9.col-lg-10 > .p-4 {
@@ -202,12 +234,13 @@
 }
 
 .card-header {
-  background: color-mix(in srgb, var(--primary) 10%, var(--surface-2)) !important;
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface-2)) !important;
   border-bottom: 1px solid var(--glass-border) !important;
 }
 
 .card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--bg-primary) 36%, transparent) !important;
 }
 
 .card-title,

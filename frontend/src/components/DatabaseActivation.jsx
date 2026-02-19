@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import apiService from '../services/api';
+import apiService, { API_BASE_URL } from '../services/api';
 
 const DatabaseActivation = () => {
   const [activationStatus, setActivationStatus] = useState('pending');
@@ -34,8 +34,7 @@ const DatabaseActivation = () => {
               try {
                 // Make a simple API call to check if database is ready
                 // For deployed version, use relative path
-                const isDeployed = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
-                const healthUrl = isDeployed ? '/api/health' : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/health`;
+                const healthUrl = `${API_BASE_URL}/health`;
                             
                 const response = await fetch(healthUrl);
                 const health = await response.json();

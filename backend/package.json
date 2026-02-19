@@ -1,0 +1,11 @@
+{
+  "name": "quizmaster-backend-wrapper",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "postinstall": "npm install --prefix server",
+    "start": "npm --prefix server start",
+    "dev": "npm --prefix server run dev"
+  }
+}

@@ -1,6 +1,9 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '/api' : 'http://localhost:5000/api');
+const ENV_API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
+const IS_LOCAL =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+export const API_BASE_URL = ENV_API_BASE_URL || (IS_LOCAL ? 'http://localhost:5000/api' : '/api');
 
 class ApiService {
   constructor() {
@@ -134,8 +137,7 @@ class ApiService {
 
   async activateDb() {
     try {
-      const isDeployed = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
-      const url = isDeployed ? '/api/activate-db' : `${API_BASE_URL}/activate-db`;
+      const url = `${API_BASE_URL}/activate-db`;
       const response = await fetch(url, { method: 'POST' });
       if (!response.ok) return null;
       return response.json();

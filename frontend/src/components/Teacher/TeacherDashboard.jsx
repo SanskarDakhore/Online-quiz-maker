@@ -25,11 +25,20 @@ const TeacherDashboard = () => {
   const [error, setError] = useState(null);
   const [logoClickCount, setLogoClickCount] = useState(0);
   const [showDancingIcon, setShowDancingIcon] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     fetchUserData();
     fetchQuizzes();
   }, [currentUser]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
   
   useEffect(() => {
     if (logoClickCount >= 5) {
@@ -170,6 +179,22 @@ const TeacherDashboard = () => {
       }
     ]
   };
+
+  const formattedLocalTime = new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  }).format(currentTime);
+
+  const formattedUtcTime = new Intl.DateTimeFormat('en-GB', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: 'UTC',
+  }).format(currentTime);
 
   if (loading) {
     return (
@@ -317,9 +342,20 @@ const TeacherDashboard = () => {
                   <h1 className="gradient-text mb-1">Teacher Dashboard <i className="bi bi-mortarboard"></i></h1>
                   <p className="mb-0">Welcome back, {userData?.name || 'Teacher'}!</p>
                 </div>
-                <button onClick={handleLogout} className="btn btn-danger">
-                  <i className="bi bi-door-open me-1"></i> Logout
-                </button>
+                <div className="d-flex align-items-center gap-3">
+                  <div className="text-end">
+                    <div className="small text-muted">
+                      <i className="bi bi-globe2 me-1"></i> Global Time (UTC)
+                    </div>
+                    <div className="fw-semibold">{formattedUtcTime}</div>
+                    <div className="small text-muted">
+                      <i className="bi bi-clock me-1"></i> Local: {formattedLocalTime}
+                    </div>
+                  </div>
+                  <button onClick={handleLogout} className="btn btn-danger">
+                    <i className="bi bi-door-open me-1"></i> Logout
+                  </button>
+                </div>
               </div>
             </div>
 

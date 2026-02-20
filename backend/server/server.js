@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import User from './models/User.js';
 import Quiz from './models/Quiz.js';
@@ -21,9 +22,21 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB (non-blocking)
 connectDB();
 
+// Global API rate limiter to reduce abusive traffic
+const apiRateLimiter = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000), // 15 minutes
+  max: Number(process.env.RATE_LIMIT_MAX || 200), // 200 requests per IP per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many requests. Please try again after some time.'
+  }
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/api', apiRateLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);

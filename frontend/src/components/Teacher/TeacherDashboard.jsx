@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import apiService from '../../services/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
+import { useAuth } from '../../contexts/AuthContext';
+import apiService from '../../services/api';
+import DashboardLayout from '../layout/DashboardLayout';
 import '../../bootstrap-theme.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
@@ -15,177 +16,83 @@ const TeacherDashboard = () => {
   const location = useLocation();
   const [userData, setUserData] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
-  const [stats, setStats] = useState({
-    totalQuizzes: 0,
-    publishedQuizzes: 0,
-    totalAttempts: 0,
-    averageScore: 0
-  });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [logoClickCount, setLogoClickCount] = useState(0);
-  const [showDancingIcon, setShowDancingIcon] = useState(false);
+  const [showLogoPulse, setShowLogoPulse] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    fetchUserData();
-    fetchQuizzes();
+    fetchDashboardData();
   }, [currentUser]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-  
+
   useEffect(() => {
-    if (logoClickCount >= 5) {
-      setShowDancingIcon(true);
-      const timer = setTimeout(() => {
-        setShowDancingIcon(false);
-        setLogoClickCount(0);
-      }, 3000);
-      
-      return () => clearTimeout(timer);
-    }
+    if (logoClickCount < 5) return;
+    setShowLogoPulse(true);
+    const timer = setTimeout(() => {
+      setShowLogoPulse(false);
+      setLogoClickCount(0);
+    }, 2500);
+    return () => clearTimeout(timer);
   }, [logoClickCount]);
 
-  const fetchUserData = async () => {
-    try {
-      const data = await apiService.getCurrentUser();
-      setUserData(data.user);
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      setError('Failed to load user data');
-    }
-  };
-
-  const fetchQuizzes = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      setError('');
+
+      const userResponse = await apiService.getCurrentUser();
+      setUserData(userResponse.user);
+
       const quizzesData = await apiService.getMyQuizzes();
-      
-      const quizzesWithAttempts = [];
-      let totalAttempts = 0;
-      let totalScores = 0;
-      let scoreCount = 0;
-
-      for (const quiz of quizzesData) {
-        const quizData = { ...quiz };
-        
-        // Get results for this quiz
-        try {
-          const results = await apiService.getQuizResults(quiz.quizId);
-          quizData.attemptCount = results.length;
-          totalAttempts += results.length;
-          
-          // Calculate average score for this quiz
-          let quizTotalScore = 0;
-          results.forEach(result => {
-            totalScores += result.score;
-            quizTotalScore += result.score;
-            scoreCount++;
-          });
-          
-          // Calculate average score for this specific quiz
-          quizData.averageScore = results.length > 0 ? Math.round((quizTotalScore / results.length) * 100) / 100 : 0;
-          
-        } catch (error) {
-          console.error('Error fetching results for quiz:', quiz.quizId, error);
-          quizData.attemptCount = 0;
-          quizData.averageScore = 0;
-        }
-        
-        quizzesWithAttempts.push(quizData);
-      }
-
-      setQuizzes(quizzesWithAttempts);
-      
-      const publishedCount = quizzesWithAttempts.filter(q => q.published).length;
-      
-      setStats({
-        totalQuizzes: quizzesWithAttempts.length,
-        publishedQuizzes: publishedCount,
-        totalAttempts: totalAttempts,
-        averageScore: scoreCount > 0 ? Math.round((totalScores / scoreCount) * 100) / 100 : 0
-      });
-      
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching quizzes:', error);
-      setError('Failed to load quizzes');
+      const quizzesWithStats = await Promise.all(
+        quizzesData.map(async (quiz) => {
+          try {
+            const results = await apiService.getQuizResults(quiz.quizId);
+            const attempts = Array.isArray(results) ? results.length : 0;
+            const averageScore = attempts > 0 ? Number((results.reduce((sum, item) => sum + item.score, 0) / attempts).toFixed(2)) : 0;
+            return { ...quiz, attemptCount: attempts, averageScore };
+          } catch {
+            return { ...quiz, attemptCount: 0, averageScore: 0 };
+          }
+        })
+      );
+      setQuizzes(quizzesWithStats);
+    } catch (err) {
+      setError(`Failed to load dashboard: ${err.message}`);
+    } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
+    await logout();
+    navigate('/login');
   };
 
-  // Chart data
-  const quizStatsData = {
-    labels: ['Total Quizzes', 'Published', 'Attempts'],
-    datasets: [{
-      label: 'Quiz Statistics',
-      data: [stats.totalQuizzes, stats.publishedQuizzes, stats.totalAttempts],
-      backgroundColor: [
-        'rgba(99, 102, 241, 0.8)',
-        'rgba(139, 92, 246, 0.8)',
-        'rgba(16, 185, 129, 0.8)'
-      ],
-      borderColor: [
-        'rgba(99, 102, 241, 1)',
-        'rgba(139, 92, 246, 1)',
-        'rgba(16, 185, 129, 1)'
-      ],
-      borderWidth: 1
-    }]
-  };
+  const stats = useMemo(() => {
+    const totalQuizzes = quizzes.length;
+    const publishedQuizzes = quizzes.filter((q) => q.published).length;
+    const totalAttempts = quizzes.reduce((sum, q) => sum + (q.attemptCount || 0), 0);
+    const scoreEntries = quizzes.filter((q) => Number.isFinite(q.averageScore) && q.attemptCount > 0);
+    const averageScore = scoreEntries.length > 0
+      ? Number((scoreEntries.reduce((sum, q) => sum + q.averageScore, 0) / scoreEntries.length).toFixed(2))
+      : 0;
 
-  const performanceData = {
-    labels: ['Average Score'],
-    datasets: [{
-      label: 'Performance',
-      data: [stats.averageScore],
-      backgroundColor: 'rgba(245, 158, 11, 0.8)',
-      borderColor: 'rgba(245, 158, 11, 1)',
-      borderWidth: 1
-    }]
-  };
+    return { totalQuizzes, publishedQuizzes, totalAttempts, averageScore };
+  }, [quizzes]);
 
-  const recentQuizzesData = {
-    labels: quizzes.slice(0, 5).map(q => q.title.length > 15 ? q.title.substring(0, 15) + '...' : q.title),
-    datasets: [
-      {
-        label: 'Attempts',
-        data: quizzes.slice(0, 5).map(q => q.attemptCount || 0),
-        backgroundColor: 'rgba(14, 165, 233, 0.8)',
-        borderColor: 'rgba(14, 165, 233, 1)',
-        borderWidth: 1
-      },
-      {
-        label: 'Average Score',
-        data: quizzes.slice(0, 5).map(q => q.averageScore || 0),
-        backgroundColor: 'rgba(245, 158, 11, 0.8)',
-        borderColor: 'rgba(245, 158, 11, 1)',
-        borderWidth: 1
-      }
-    ]
-  };
-
-  const formattedLocalTime = new Intl.DateTimeFormat('en-US', {
+  const formattedLocalTime = useMemo(() => new Intl.DateTimeFormat('en-US', {
     dateStyle: 'medium',
     timeStyle: 'medium',
-  }).format(currentTime);
+  }).format(currentTime), [currentTime]);
 
-  const formattedUtcTime = new Intl.DateTimeFormat('en-GB', {
+  const formattedUtcTime = useMemo(() => new Intl.DateTimeFormat('en-GB', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
@@ -194,381 +101,222 @@ const TeacherDashboard = () => {
     second: '2-digit',
     hour12: false,
     timeZone: 'UTC',
-  }).format(currentTime);
+  }).format(currentTime), [currentTime]);
 
-  if (loading) {
-    return (
-      <div className="container-fluid p-0">
-        <div className="row g-0">
-          {/* Sidebar */}
-          <div className="col-md-3 col-lg-2 sidebar-custom p-3">
-            <div className="mb-4 text-center">
-              <h3 className="gradient-text mb-1">QuizMaster</h3>
-              <small className="text-muted">Teacher</small>
-            </div>
-            <nav className="nav flex-column">
-              <div className="nav-link disabled text-white bg-primary rounded py-2 px-3 mb-1">
-                <i className="bi bi-speedometer2 nav-icon"></i><span className="nav-label">Dashboard</span>
-              </div>
-              <div className="nav-link disabled text-white rounded py-2 px-3 mb-1">
-                <i className="bi bi-journal-text nav-icon"></i><span className="nav-label">My Quizzes</span>
-              </div>
-              <div className="nav-link disabled text-white rounded py-2 px-3 mb-1">
-                <i className="bi bi-plus-circle nav-icon"></i><span className="nav-label">Create Quiz</span>
-              </div>
-            </nav>
-            <button className="btn btn-danger w-100 sidebar-logout-btn mt-3" disabled>
-              <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
-            </button>
-          </div>
-          
-          {/* Main Content */}
-          <div className="col-md-9 col-lg-10">
-            <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
-              <div className="text-center">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-                <p className="mt-2 text-white">Loading dashboard...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="container-fluid p-0">
-        <div className="row g-0">
-          {/* Sidebar */}
-          <div className="col-md-3 col-lg-2 sidebar-custom p-3">
-            <div className="mb-4 text-center">
-              <h3 className="gradient-text mb-1">QuizMaster</h3>
-              <small className="text-muted">Teacher</small>
-            </div>
-            <nav className="nav flex-column">
-              <Link to="/teacher/dashboard" className="nav-link text-white active">
-                <i className="bi bi-speedometer2 nav-icon"></i><span className="nav-label">Dashboard</span>
-              </Link>
-              <Link to="/teacher/quizzes" className="nav-link text-white">
-                <i className="bi bi-journal-text nav-icon"></i><span className="nav-label">My Quizzes</span>
-              </Link>
-              <Link to="/teacher/create-quiz" className="nav-link text-white">
-                <i className="bi bi-plus-circle nav-icon"></i><span className="nav-label">Create Quiz</span>
-              </Link>
-            </nav>
-            <button onClick={handleLogout} className="btn btn-danger w-100 sidebar-logout-btn mt-3">
-              <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
-            </button>
-          </div>
-          
-          {/* Main Content */}
-          <div className="col-md-9 col-lg-10">
-            <div className="p-4">
-              <div className="card card-glass mb-4">
-                <div className="card-body d-flex justify-content-between align-items-center">
-                  <div>
-                    <h1 className="gradient-text mb-1">Teacher Dashboard <i className="bi bi-mortarboard"></i></h1>
-                    <p className="mb-0">Welcome back, {userData?.name || 'Teacher'}!</p>
-                  </div>
-                  <button onClick={handleLogout} className="btn btn-danger">
-                    <i className="bi bi-door-open me-1"></i> Logout
-                  </button>
-                </div>
-              </div>
-              
-              <div className="row justify-content-center">
-                <div className="col-md-6">
-                  <div className="card card-glass p-4">
-                    <h3 className="text-center mb-3">Error Loading Dashboard</h3>
-                    <p className="text-center text-muted">{error}</p>
-                    <div className="text-center">
-                      <button onClick={() => {
-                        setError(null);
-                        fetchUserData();
-                        fetchQuizzes();
-                      }} className="btn btn-gradient">
-                        <i className="bi bi-arrow-repeat me-2"></i>Retry
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const quizStatsData = {
+    labels: ['Total Quizzes', 'Published', 'Attempts'],
+    datasets: [{
+      label: 'Quiz Statistics',
+      data: [stats.totalQuizzes, stats.publishedQuizzes, stats.totalAttempts],
+      backgroundColor: ['rgba(45, 188, 164, 0.8)', 'rgba(56, 189, 248, 0.8)', 'rgba(245, 158, 11, 0.8)'],
+      borderWidth: 1,
+    }],
+  };
+
+  const performanceData = {
+    labels: ['Average Score'],
+    datasets: [{
+      label: 'Performance',
+      data: [stats.averageScore],
+      backgroundColor: ['rgba(245, 158, 11, 0.85)'],
+      borderWidth: 1,
+    }],
+  };
+
+  const recentQuizzesData = {
+    labels: quizzes.slice(0, 5).map((q) => (q.title.length > 15 ? `${q.title.slice(0, 15)}...` : q.title)),
+    datasets: [
+      {
+        label: 'Attempts',
+        data: quizzes.slice(0, 5).map((q) => q.attemptCount || 0),
+        backgroundColor: 'rgba(56, 189, 248, 0.8)',
+      },
+      {
+        label: 'Average Score',
+        data: quizzes.slice(0, 5).map((q) => q.averageScore || 0),
+        backgroundColor: 'rgba(245, 158, 11, 0.8)',
+      },
+    ],
+  };
 
   return (
-    <div className="container-fluid p-0">
-      <div className="row g-0">
-        {/* Sidebar */}
-        <div className="col-md-3 col-lg-2 sidebar-custom p-3 min-vh-100">
-          <div className="mb-4 text-center" onClick={() => setLogoClickCount(prev => prev + 1)}>
-            <h3 className="gradient-text mb-1">QuizMaster</h3>
-            <small className="text-muted">Teacher</small>
-            {showDancingIcon && (
-              <div className="fs-1 mt-2">🎉</div>
-            )}
+    <DashboardLayout
+      role="teacher"
+      currentPath={location.pathname}
+      onLogout={handleLogout}
+      title="Teacher Dashboard"
+      subtitle={`Welcome back, ${userData?.name || 'Teacher'}!`}
+      iconClass="bi-mortarboard"
+      onBrandClick={() => setLogoClickCount((prev) => prev + 1)}
+      showBrandPulse={showLogoPulse}
+      headerRight={
+        <div className="d-flex align-items-center gap-3">
+          <div className="text-end dashboard-header-meta">
+            <div className="small text-muted">
+              <i className="bi bi-globe2 me-1"></i>UTC
+            </div>
+            <div className="fw-semibold">{formattedUtcTime}</div>
+            <div className="small text-muted">
+              <i className="bi bi-clock me-1"></i>Local: {formattedLocalTime}
+            </div>
           </div>
-          
-          <nav className="nav flex-column mb-4 sidebar-nav">
-            <Link to="/teacher/dashboard" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/dashboard' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-speedometer2 nav-icon"></i><span className="nav-label">Dashboard</span>
-            </Link>
-            <Link to="/teacher/quizzes" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/quizzes' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-journal-text nav-icon"></i><span className="nav-label">My Quizzes</span>
-            </Link>
-            <Link to="/teacher/create-quiz" className={`nav-link text-white rounded py-2 px-3 mb-1 ${location.pathname === '/teacher/create-quiz' ? 'active bg-primary' : ''}`}>
-              <i className="bi bi-plus-circle nav-icon"></i><span className="nav-label">Create Quiz</span>
-            </Link>
-          </nav>
-          
-          <button onClick={handleLogout} className="btn btn-danger w-100 sidebar-logout-btn">
-            <i className="bi bi-door-open nav-icon"></i><span className="nav-label">Logout</span>
+          <button onClick={handleLogout} className="btn btn-danger">
+            <i className="bi bi-door-open me-1"></i> Logout
           </button>
         </div>
-        
-        {/* Main Content */}
-        <div className="col-md-9 col-lg-10">
-          <div className="p-4">
-            <div className="card card-glass mb-4">
-              <div className="card-body d-flex justify-content-between align-items-center">
-                <div>
-                  <h1 className="gradient-text mb-1">Teacher Dashboard <i className="bi bi-mortarboard"></i></h1>
-                  <p className="mb-0">Welcome back, {userData?.name || 'Teacher'}!</p>
-                </div>
-                <div className="d-flex align-items-center gap-3">
-                  <div className="text-end">
-                    <div className="small text-muted">
-                      <i className="bi bi-globe2 me-1"></i> Global Time (UTC)
-                    </div>
-                    <div className="fw-semibold">{formattedUtcTime}</div>
-                    <div className="small text-muted">
-                      <i className="bi bi-clock me-1"></i> Local: {formattedLocalTime}
-                    </div>
-                  </div>
-                  <button onClick={handleLogout} className="btn btn-danger">
-                    <i className="bi bi-door-open me-1"></i> Logout
-                  </button>
-                </div>
-              </div>
+      }
+      loading={loading}
+      loadingText="Loading dashboard..."
+      error={error}
+      onRetry={fetchDashboardData}
+    >
+      <div className="row mb-4">
+        <motion.div className="col-md-3 mb-3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="card card-glass h-100">
+            <div className="card-body text-center">
+              <div className="display-5 mb-2"><i className="bi bi-journals"></i></div>
+              <h3 className="gradient-text mb-1">{stats.totalQuizzes}</h3>
+              <p className="text-muted mb-0">Total Quizzes</p>
             </div>
-
-            {/* Stats Cards Row */}
-            <div className="row mb-4">
-              <motion.div 
-                className="col-md-3 mb-3"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <div className="card card-glass h-100">
-                  <div className="card-body text-center">
-                    <div className="display-4 mb-2">📝</div>
-                    <h3 className="gradient-text mb-1">{stats.totalQuizzes}</h3>
-                    <p className="text-muted mb-0">Total Quizzes</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div 
-                className="col-md-3 mb-3"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="card card-glass h-100">
-                  <div className="card-body text-center">
-                    <div className="display-4 mb-2">✅</div>
-                    <h3 className="gradient-text mb-1">{stats.publishedQuizzes}</h3>
-                    <p className="text-muted mb-0">Published</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div 
-                className="col-md-3 mb-3"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <div className="card card-glass h-100">
-                  <div className="card-body text-center">
-                    <div className="display-4 mb-2">👥</div>
-                    <h3 className="gradient-text mb-1">{stats.totalAttempts}</h3>
-                    <p className="text-muted mb-0">Total Attempts</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div 
-                className="col-md-3 mb-3"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <div className="card card-glass h-100">
-                  <div className="card-body text-center">
-                    <div className="display-4 mb-2">⭐</div>
-                    <h3 className="gradient-text mb-1">{stats.averageScore}%</h3>
-                    <p className="text-muted mb-0">Average Score</p>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Charts Section */}
-            <div className="row mb-4">
-              <div className="col-md-8 mb-4 mb-md-0">
-                <motion.div 
-                  className="card card-glass h-100"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <div className="card-body">
-                    <h3 className="mb-4">Quiz Statistics</h3>
-                    <div style={{ height: '300px' }}>
-                      <Bar data={quizStatsData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }} />
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-              <div className="col-md-4">
-                <motion.div 
-                  className="card card-glass h-100"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <div className="card-body">
-                    <h3 className="mb-4">Performance</h3>
-                    <div style={{ height: '300px' }}>
-                      <Doughnut data={performanceData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }} />
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-
-            {/* Recent Quizzes */}
-            <motion.div 
-              className="card card-glass mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-            >
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">Recent Quizzes</h3>
-                <Link to="/teacher/quizzes" className="btn btn-outline-primary btn-sm">
-                  View All <i className="bi bi-arrow-right"></i>
-                </Link>
-              </div>
-              <div className="card-body">
-                {quizzes.length === 0 ? (
-                  <div className="text-center py-4">
-                    <p className="text-muted">No quizzes created yet</p>
-                    <Link to="/teacher/create-quiz" className="btn btn-gradient">
-                      <i className="bi bi-plus-circle me-2"></i>Create Your First Quiz
-                    </Link>
-                  </div>
-                ) : (
-                  <div style={{ height: '300px' }}>
-                    <Bar data={recentQuizzesData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }} />
-                  </div>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Quick Actions */}
-            <div className="row mb-4">
-              <div className="col-md-6 mb-3">
-                <motion.div 
-                  className="card card-glass h-100"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="card-body text-center">
-                    <Link to="/teacher/create-quiz" className="text-decoration-none">
-                      <div className="display-4 mb-2">➕</div>
-                      <h4 className="gradient-text">Create Quiz</h4>
-                      <p className="text-muted mb-0">Design a new quiz</p>
-                    </Link>
-                  </div>
-                </motion.div>
-              </div>
-
-              <div className="col-md-6 mb-3">
-                <motion.div 
-                  className="card card-glass h-100"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="card-body text-center">
-                    <Link to="/teacher/quizzes" className="text-decoration-none">
-                      <div className="display-4 mb-2">📋</div>
-                      <h4 className="gradient-text">Manage Quizzes</h4>
-                      <p className="text-muted mb-0">Edit existing quizzes</p>
-                    </Link>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-            
-            {/* Recent Activity */}
-            <motion.div 
-              className="card card-glass"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-            >
-              <div className="card-header">
-                <h3 className="mb-0">Recent Activity</h3>
-              </div>
-              <div className="card-body">
-                {quizzes.length > 0 ? (
-                  <div className="table-responsive">
-                    <table className="table table-transparent">
-                      <thead>
-                        <tr>
-                          <th>Quiz Title</th>
-                          <th>Attempts</th>
-                          <th>Created Date</th>
-                          <th>Avg. Score</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {quizzes.slice(0, 5).map((quiz, index) => (
-                          <tr key={quiz.quizId}>
-                            <td>{quiz.title}</td>
-                            <td><span className="badge bg-info">{quiz.attemptCount || 0} attempts</span></td>
-                            <td>{quiz.createdAt ? new Date(quiz.createdAt).toLocaleDateString() : 'N/A'}</td>
-                            <td><span className="badge bg-primary">{quiz.averageScore !== undefined ? `${quiz.averageScore}%` : 'N/A'}</span></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-muted mb-0">No recent activity</p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
           </div>
+        </motion.div>
+        <motion.div className="col-md-3 mb-3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <div className="card card-glass h-100">
+            <div className="card-body text-center">
+              <div className="display-5 mb-2"><i className="bi bi-cloud-check"></i></div>
+              <h3 className="gradient-text mb-1">{stats.publishedQuizzes}</h3>
+              <p className="text-muted mb-0">Published</p>
+            </div>
+          </div>
+        </motion.div>
+        <motion.div className="col-md-3 mb-3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <div className="card card-glass h-100">
+            <div className="card-body text-center">
+              <div className="display-5 mb-2"><i className="bi bi-people"></i></div>
+              <h3 className="gradient-text mb-1">{stats.totalAttempts}</h3>
+              <p className="text-muted mb-0">Total Attempts</p>
+            </div>
+          </div>
+        </motion.div>
+        <motion.div className="col-md-3 mb-3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <div className="card card-glass h-100">
+            <div className="card-body text-center">
+              <div className="display-5 mb-2"><i className="bi bi-graph-up-arrow"></i></div>
+              <h3 className="gradient-text mb-1">{stats.averageScore}%</h3>
+              <p className="text-muted mb-0">Average Score</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="row mb-4">
+        <div className="col-md-8 mb-4 mb-md-0">
+          <motion.div className="card card-glass h-100" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
+            <div className="card-body">
+              <h3 className="mb-4">Quiz Statistics</h3>
+              <div style={{ height: '300px' }}>
+                <Bar data={quizStatsData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }} />
+              </div>
+            </div>
+          </motion.div>
+        </div>
+        <div className="col-md-4">
+          <motion.div className="card card-glass h-100" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
+            <div className="card-body">
+              <h3 className="mb-4">Performance</h3>
+              <div style={{ height: '300px' }}>
+                <Doughnut data={performanceData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }} />
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+
+      <motion.div className="card card-glass mb-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <h3 className="mb-0">Recent Quizzes</h3>
+          <Link to="/teacher/quizzes" className="btn btn-outline-primary btn-sm">
+            View All <i className="bi bi-arrow-right"></i>
+          </Link>
+        </div>
+        <div className="card-body">
+          {quizzes.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-muted">No quizzes created yet</p>
+              <Link to="/teacher/create-quiz" className="btn btn-gradient">
+                <i className="bi bi-plus-circle me-2"></i>Create Your First Quiz
+              </Link>
+            </div>
+          ) : (
+            <div style={{ height: '300px' }}>
+              <Bar data={recentQuizzesData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }} />
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      <div className="row mb-4">
+        <div className="col-md-6 mb-3">
+          <motion.div className="card card-glass h-100" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <div className="card-body text-center">
+              <Link to="/teacher/create-quiz" className="text-decoration-none">
+                <div className="display-5 mb-2"><i className="bi bi-plus-square"></i></div>
+                <h4 className="gradient-text">Create Quiz</h4>
+                <p className="text-muted mb-0">Design a new quiz</p>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+        <div className="col-md-6 mb-3">
+          <motion.div className="card card-glass h-100" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <div className="card-body text-center">
+              <Link to="/teacher/quizzes" className="text-decoration-none">
+                <div className="display-5 mb-2"><i className="bi bi-kanban"></i></div>
+                <h4 className="gradient-text">Manage Quizzes</h4>
+                <p className="text-muted mb-0">Edit and review existing quizzes</p>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      <motion.div className="card card-glass" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
+        <div className="card-header">
+          <h3 className="mb-0">Recent Activity</h3>
+        </div>
+        <div className="card-body">
+          {quizzes.length > 0 ? (
+            <div className="table-responsive">
+              <table className="table table-transparent">
+                <thead>
+                  <tr>
+                    <th>Quiz Title</th>
+                    <th>Attempts</th>
+                    <th>Created Date</th>
+                    <th>Avg. Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quizzes.slice(0, 5).map((quiz) => (
+                    <tr key={quiz.quizId}>
+                      <td>{quiz.title}</td>
+                      <td><span className="badge bg-info">{quiz.attemptCount || 0} attempts</span></td>
+                      <td>{quiz.createdAt ? new Date(quiz.createdAt).toLocaleDateString() : 'N/A'}</td>
+                      <td><span className="badge bg-primary">{quiz.averageScore}%</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-muted mb-0">No recent activity</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </DashboardLayout>
   );
 };
 
 export default TeacherDashboard;
-
-
-

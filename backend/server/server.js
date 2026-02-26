@@ -24,8 +24,8 @@ connectDB();
 
 // Global API rate limiter to reduce abusive traffic
 const apiRateLimiter = rateLimit({
-  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000), // 15 minutes
-  max: Number(process.env.RATE_LIMIT_MAX || 200), // 200 requests per IP per window
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 60 * 1000), // 1 minute
+  max: Number(process.env.RATE_LIMIT_MAX || 150), // 150 requests per IP per window
   standardHeaders: true,
   legacyHeaders: false,
   message: {

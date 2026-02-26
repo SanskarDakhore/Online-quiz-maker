@@ -1,39 +1,64 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import apiService from '../../services/api';
+import DashboardLayout from '../layout/DashboardLayout';
 import '../../bootstrap-theme.css';
 
 const TeacherQuizResults = () => {
   const { quizId } = useParams();
+  const { logout } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await apiService.getQuizResults(quizId);
-        setResults(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setError(err.message || 'Failed to load results');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    fetchResults();
   }, [quizId]);
 
-  if (loading) return <div className="container py-5 text-center">Loading results...</div>;
-  if (error) return <div className="container py-5 text-center text-danger">{error}</div>;
+  const fetchResults = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await apiService.getQuizResults(quizId);
+      setResults(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || 'Failed to load results');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
-    <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Quiz Results</h2>
-        <button className="btn btn-outline-secondary" onClick={() => navigate('/teacher/quizzes')}>Back</button>
-      </div>
-
+    <DashboardLayout
+      role="teacher"
+      currentPath={location.pathname}
+      onLogout={handleLogout}
+      title="Quiz Results"
+      subtitle="Review student performance for this quiz"
+      iconClass="bi-bar-chart-line"
+      headerRight={
+        <div className="d-flex gap-2">
+          <button className="btn btn-outline-secondary" onClick={() => navigate('/teacher/quizzes')}>
+            Back
+          </button>
+          <button onClick={handleLogout} className="btn btn-danger">
+            <i className="bi bi-door-open me-1"></i> Logout
+          </button>
+        </div>
+      }
+      loading={loading}
+      loadingText="Loading results..."
+      error={error}
+      onRetry={fetchResults}
+    >
       <div className="card card-glass">
         <div className="card-body">
           {results.length === 0 ? (
@@ -70,7 +95,7 @@ const TeacherQuizResults = () => {
       <div className="mt-3">
         <Link to="/teacher/quizzes" className="btn btn-gradient">Back to My Quizzes</Link>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

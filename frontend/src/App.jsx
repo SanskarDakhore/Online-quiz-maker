@@ -62,6 +62,7 @@ const AppShell = () => {
     location.pathname.startsWith('/teacher/quizzes') ||
     location.pathname.startsWith('/teacher/create-quiz') ||
     location.pathname.startsWith('/teacher/edit-quiz') ||
+    location.pathname.startsWith('/teacher/results') ||
     location.pathname.startsWith('/student/quizzes') ||
     location.pathname.startsWith('/student/profile');
 

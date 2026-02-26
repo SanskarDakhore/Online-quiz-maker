@@ -13,6 +13,10 @@ const QuizResult = () => {
   const [result, setResult] = useState(null);
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const MARKS_PER_CORRECT = 4;
+  const MARKS_PER_INCORRECT = -3;
+  const HINT_DEDUCTION = 2;
+  const clampPercentage = (value) => Math.min(100, Math.max(0, Math.round(value)));
 
   const normalizeAnswerIndex = (value) => {
     if (Number.isInteger(value)) return value;
@@ -146,6 +150,13 @@ const QuizResult = () => {
     const skipped = Math.max(0, totalQuestions - attempted);
     const correct = Number.isFinite(result?.correctAnswers) ? result.correctAnswers : 0;
     const incorrect = Math.max(0, attempted - correct);
+    const hintsUsed = Number.isFinite(result?.hintsUsed) ? result.hintsUsed : 0;
+    const totalMarks = Number.isFinite(result?.totalMarks) ? result.totalMarks : totalQuestions * MARKS_PER_CORRECT;
+    const baseMarks = Number.isFinite(result?.baseMarks) ? result.baseMarks : (correct * MARKS_PER_CORRECT) + (incorrect * MARKS_PER_INCORRECT);
+    const obtainedMarks = Number.isFinite(result?.obtainedMarks) ? result.obtainedMarks : baseMarks - (hintsUsed * HINT_DEDUCTION);
+    const accuracy = Number.isFinite(result?.accuracy)
+      ? result.accuracy
+      : clampPercentage(totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0);
 
     return {
       totalQuestions,
@@ -153,10 +164,13 @@ const QuizResult = () => {
       skipped,
       correct,
       incorrect,
-      accuracy: totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0,
+      totalMarks,
+      baseMarks,
+      obtainedMarks,
+      accuracy,
       timeTakenText: formatDuration(result?.timeTaken),
       tabSwitchCount: Number.isFinite(result?.tabSwitchCount) ? result.tabSwitchCount : 0,
-      hintsUsed: Number.isFinite(result?.hintsUsed) ? result.hintsUsed : 0
+      hintsUsed
     };
   }, [result, questionReview]);
 
@@ -199,7 +213,7 @@ const QuizResult = () => {
             <motion.div className="card card-glass mb-4 text-center" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2 }}>
               <div className="card-body p-5">
                 <h2 className="gradient-text mb-3">{result.quizTitle || 'Quiz Result'}</h2>
-                <p className="text-muted mb-4">{getScoreMessage(result.score)}</p>
+                <p className="text-muted mb-4">{getScoreMessage(performanceSummary.accuracy)}</p>
 
                 <div className="d-flex justify-content-center mb-4">
                   <div className="position-relative" style={{ width: '200px', height: '200px' }}>
@@ -215,14 +229,14 @@ const QuizResult = () => {
                         className="circle"
                         d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                         fill="none"
-                        stroke={getScoreColor(result.score)}
+                        stroke={getScoreColor(performanceSummary.accuracy)}
                         strokeWidth="2"
-                        strokeDasharray={`${Math.round(result.score)}, 100`}
+                        strokeDasharray={`${Math.round(performanceSummary.accuracy)}, 100`}
                         strokeLinecap="round"
                       />
                     </svg>
-                    <div className="position-absolute top-50 start-50 translate-middle fs-1 fw-bold" style={{ color: getScoreColor(result.score) }}>
-                      {Math.round(result.score)}%
+                    <div className="position-absolute top-50 start-50 translate-middle fs-1 fw-bold" style={{ color: getScoreColor(performanceSummary.accuracy) }}>
+                      {Math.round(performanceSummary.accuracy)}%
                     </div>
                   </div>
                 </div>
@@ -263,8 +277,8 @@ const QuizResult = () => {
 
                 {result.hintsUsed !== undefined && result.hintsUsed > 0 && (
                   <div className="alert alert-info">
-                    <p className="mb-1">Hints Used: {result.hintsUsed} (Points deducted: {result.pointsDeductedForHints || result.hintsUsed * 2})</p>
-                    <p className="mb-0">Final Score: {result.score}% (Base Score: {result.baseScore || Math.round(result.score + (result.pointsDeductedForHints || result.hintsUsed * 2))}%)</p>
+                    <p className="mb-1">Hints Used: {performanceSummary.hintsUsed} (Penalty: {result.pointsDeductedForHints || performanceSummary.hintsUsed * HINT_DEDUCTION} marks)</p>
+                    <p className="mb-0">Marks: {performanceSummary.obtainedMarks}/{performanceSummary.totalMarks} (Accuracy: {performanceSummary.accuracy}%)</p>
                   </div>
                 )}
               </div>
@@ -283,6 +297,8 @@ const QuizResult = () => {
                       <div className="d-flex justify-content-between"><span className="text-muted">Skipped</span><strong>{performanceSummary.skipped}</strong></div>
                       <div className="d-flex justify-content-between"><span className="text-muted">Correct</span><strong className="text-success">{performanceSummary.correct}</strong></div>
                       <div className="d-flex justify-content-between"><span className="text-muted">Incorrect</span><strong className="text-danger">{performanceSummary.incorrect}</strong></div>
+                      <div className="d-flex justify-content-between"><span className="text-muted">Base Marks</span><strong>{performanceSummary.baseMarks}</strong></div>
+                      <div className="d-flex justify-content-between"><span className="text-muted">Obtained Marks</span><strong>{performanceSummary.obtainedMarks}/{performanceSummary.totalMarks}</strong></div>
                       <div className="d-flex justify-content-between"><span className="text-muted">Accuracy</span><strong>{performanceSummary.accuracy}%</strong></div>
                       <div className="d-flex justify-content-between"><span className="text-muted">Time Taken</span><strong>{performanceSummary.timeTakenText}</strong></div>
                       <div className="d-flex justify-content-between"><span className="text-muted">Tab Switches</span><strong>{performanceSummary.tabSwitchCount}</strong></div>

@@ -6,6 +6,66 @@ import User from '../models/User.js';
 import { authenticateToken, authorizeRole } from '../middleware/auth.js';
 
 const router = express.Router();
+const MARKS_PER_CORRECT = 4;
+const MARKS_PER_INCORRECT = -3;
+const HINT_DEDUCTION = 2;
+
+const clampPercentage = (value) => Math.min(100, Math.max(0, Math.round(value)));
+
+const isAnswered = (value) => Number.isInteger(value);
+
+const deriveMarksSummary = ({
+  answers = [],
+  totalQuestions = 0,
+  correctAnswers = 0,
+  hintsUsed = 0,
+  attemptedAnswers = null,
+  incorrectAnswers = null,
+  totalMarks = null,
+  baseMarks = null,
+  obtainedMarks = null,
+  score = null,
+  baseScore = null,
+  accuracy = null
+}) => {
+  const safeTotalQuestions = Number.isFinite(totalQuestions) ? Math.max(0, totalQuestions) : 0;
+  const safeCorrect = Number.isFinite(correctAnswers) ? Math.max(0, correctAnswers) : 0;
+  const safeHintsUsed = Number.isFinite(hintsUsed) ? Math.max(0, hintsUsed) : 0;
+  const computedAttempted = Array.isArray(answers) ? answers.filter((answer) => isAnswered(answer)).length : 0;
+  const safeAttempted = Number.isFinite(attemptedAnswers) ? Math.max(0, attemptedAnswers) : computedAttempted;
+  const safeIncorrect = Number.isFinite(incorrectAnswers)
+    ? Math.max(0, incorrectAnswers)
+    : Math.max(0, safeAttempted - safeCorrect);
+
+  const safeTotalMarks = Number.isFinite(totalMarks)
+    ? Math.max(0, totalMarks)
+    : safeTotalQuestions * MARKS_PER_CORRECT;
+  const safeBaseMarks = Number.isFinite(baseMarks)
+    ? baseMarks
+    : (safeCorrect * MARKS_PER_CORRECT) + (safeIncorrect * MARKS_PER_INCORRECT);
+  const safeObtainedMarks = Number.isFinite(obtainedMarks)
+    ? obtainedMarks
+    : safeBaseMarks - (safeHintsUsed * HINT_DEDUCTION);
+
+  const computedAccuracy = safeTotalMarks > 0 ? (safeObtainedMarks / safeTotalMarks) * 100 : 0;
+  const safeAccuracy = Number.isFinite(accuracy) ? accuracy : clampPercentage(computedAccuracy);
+  const safeScore = Number.isFinite(score) ? score : safeAccuracy;
+  const safeBaseScore = Number.isFinite(baseScore)
+    ? baseScore
+    : clampPercentage(safeTotalMarks > 0 ? (safeBaseMarks / safeTotalMarks) * 100 : 0);
+
+  return {
+    attemptedAnswers: safeAttempted,
+    incorrectAnswers: safeIncorrect,
+    totalMarks: safeTotalMarks,
+    baseMarks: safeBaseMarks,
+    obtainedMarks: safeObtainedMarks,
+    accuracy: safeAccuracy,
+    score: safeScore,
+    baseScore: safeBaseScore,
+    pointsDeductedForHints: safeHintsUsed * HINT_DEDUCTION
+  };
+};
 
 const serializeReviewQuestions = (quiz) => (
   (quiz?.questions || []).map((question) => ({
@@ -20,27 +80,55 @@ const serializeReviewQuestions = (quiz) => (
   }))
 );
 
-const serializeResult = (result, quiz = null, student = null, { includeReviewQuestions = false } = {}) => ({
-  resultId: result.resultId,
-  quizId: result.quizId,
-  quizTitle: quiz?.title || 'Untitled Quiz',
-  studentId: result.studentId,
-  studentName: student?.name || undefined,
-  studentEmail: student?.email || undefined,
-  score: result.score,
-  baseScore: result.baseScore ?? result.score,
-  hintsUsed: result.hintsUsed || 0,
-  pointsDeductedForHints: result.pointsDeductedForHints || 0,
-  correctAnswers: result.correctAnswers,
-  totalQuestions: result.totalQuestions,
-  answers: result.answers || [],
-  timestamp: result.timestamp,
-  autoSubmitted: !!result.autoSubmitted,
-  autoSubmitReason: result.autoSubmitReason || null,
-  tabSwitchCount: result.tabSwitchCount || 0,
-  timeTaken: result.timeTaken ?? null,
-  ...(includeReviewQuestions ? { reviewQuestions: serializeReviewQuestions(quiz) } : {})
-});
+const serializeResult = (result, quiz = null, student = null, { includeReviewQuestions = false } = {}) => {
+  const marksSummary = deriveMarksSummary({
+    answers: result.answers || [],
+    totalQuestions: result.totalQuestions,
+    correctAnswers: result.correctAnswers,
+    hintsUsed: result.hintsUsed || 0,
+    attemptedAnswers: result.attemptedAnswers,
+    incorrectAnswers: result.incorrectAnswers,
+    totalMarks: result.totalMarks,
+    baseMarks: result.baseMarks,
+    obtainedMarks: result.obtainedMarks,
+    score: result.score,
+    baseScore: result.baseScore,
+    accuracy: result.accuracy
+  });
+
+  return {
+    resultId: result.resultId,
+    quizId: result.quizId,
+    quizTitle: quiz?.title || 'Untitled Quiz',
+    studentId: result.studentId,
+    studentName: student?.name || undefined,
+    studentEmail: student?.email || undefined,
+    score: marksSummary.score,
+    accuracy: marksSummary.accuracy,
+    baseScore: marksSummary.baseScore,
+    hintsUsed: result.hintsUsed || 0,
+    pointsDeductedForHints: marksSummary.pointsDeductedForHints,
+    correctAnswers: result.correctAnswers,
+    attemptedAnswers: marksSummary.attemptedAnswers,
+    incorrectAnswers: marksSummary.incorrectAnswers,
+    totalQuestions: result.totalQuestions,
+    totalMarks: marksSummary.totalMarks,
+    baseMarks: marksSummary.baseMarks,
+    obtainedMarks: marksSummary.obtainedMarks,
+    markingScheme: {
+      correct: MARKS_PER_CORRECT,
+      incorrect: MARKS_PER_INCORRECT,
+      hintDeduction: HINT_DEDUCTION
+    },
+    answers: result.answers || [],
+    timestamp: result.timestamp,
+    autoSubmitted: !!result.autoSubmitted,
+    autoSubmitReason: result.autoSubmitReason || null,
+    tabSwitchCount: result.tabSwitchCount || 0,
+    timeTaken: result.timeTaken ?? null,
+    ...(includeReviewQuestions ? { reviewQuestions: serializeReviewQuestions(quiz) } : {})
+  };
+};
 
 // Submit quiz result
 router.post('/', authenticateToken, authorizeRole('student'), async (req, res) => {
@@ -55,23 +143,29 @@ router.post('/', authenticateToken, authorizeRole('student'), async (req, res) =
     if (!quiz.published) return res.status(403).json({ error: 'Quiz is not published' });
 
     let correctAnswers = 0;
-    let totalPossiblePoints = 0;
-    let earnedPoints = 0;
+    let attemptedAnswers = 0;
 
     quiz.questions.forEach((question, index) => {
-      const points = question.points || 1;
-      totalPossiblePoints += points;
-      if (answers[index] === question.correctAnswer) {
+      const submittedAnswer = answers[index];
+      if (isAnswered(submittedAnswer)) {
+        attemptedAnswers += 1;
+      }
+
+      if (submittedAnswer === question.correctAnswer) {
         correctAnswers += 1;
-        earnedPoints += points;
       }
     });
 
     const totalQuestions = quiz.questions.length;
-    const baseScore = totalPossiblePoints > 0 ? Math.round((earnedPoints / totalPossiblePoints) * 100) : 0;
     const safeHintsUsed = Number.isFinite(hintsUsed) ? Math.max(0, hintsUsed) : 0;
-    const pointsDeductedForHints = safeHintsUsed * 2;
-    const score = Math.max(0, baseScore - pointsDeductedForHints);
+    const incorrectAnswers = Math.max(0, attemptedAnswers - correctAnswers);
+    const totalMarks = totalQuestions * MARKS_PER_CORRECT;
+    const baseMarks = (correctAnswers * MARKS_PER_CORRECT) + (incorrectAnswers * MARKS_PER_INCORRECT);
+    const pointsDeductedForHints = safeHintsUsed * HINT_DEDUCTION;
+    const obtainedMarks = baseMarks - pointsDeductedForHints;
+    const baseScore = clampPercentage(totalMarks > 0 ? (baseMarks / totalMarks) * 100 : 0);
+    const accuracy = clampPercentage(totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0);
+    const score = accuracy;
 
     const result = new Result({
       resultId: uuidv4(),
@@ -82,7 +176,13 @@ router.post('/', authenticateToken, authorizeRole('student'), async (req, res) =
       hintsUsed: safeHintsUsed,
       pointsDeductedForHints,
       correctAnswers,
+      attemptedAnswers,
+      incorrectAnswers,
       totalQuestions,
+      totalMarks,
+      baseMarks,
+      obtainedMarks,
+      accuracy,
       answers: answers.slice(0, totalQuestions),
       autoSubmitted: !!autoSubmitReason && autoSubmitReason !== 'Quiz submitted',
       autoSubmitReason: autoSubmitReason || 'Quiz submitted',

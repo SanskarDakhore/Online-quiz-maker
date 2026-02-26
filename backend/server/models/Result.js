@@ -60,6 +60,30 @@ const resultSchema = new mongoose.Schema({
   pointsDeductedForHints: {
     type: Number,
     default: 0
+  },
+  attemptedAnswers: {
+    type: Number,
+    default: 0
+  },
+  incorrectAnswers: {
+    type: Number,
+    default: 0
+  },
+  totalMarks: {
+    type: Number,
+    default: 0
+  },
+  obtainedMarks: {
+    type: Number,
+    default: 0
+  },
+  baseMarks: {
+    type: Number,
+    default: 0
+  },
+  accuracy: {
+    type: Number,
+    default: 0
   }
 });
 

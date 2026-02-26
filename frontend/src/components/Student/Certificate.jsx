@@ -14,6 +14,10 @@ const Certificate = () => {
   const [result, setResult] = useState(null);
   const [student, setStudent] = useState(null);
   const [quiz, setQuiz] = useState(null);
+  const MARKS_PER_CORRECT = 4;
+  const MARKS_PER_INCORRECT = -3;
+  const HINT_DEDUCTION = 2;
+  const clampPercentage = (value) => Math.min(100, Math.max(0, Math.round(value)));
 
   useEffect(() => {
     const fetchCertificateData = async () => {
@@ -80,9 +84,20 @@ const Certificate = () => {
 
     const skippedAnswers = Math.max(0, totalQuestions - attemptedAnswers);
     const incorrectAnswers = Math.max(0, attemptedAnswers - correctAnswers);
-    const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+    const hintsUsed = Number.isFinite(result.hintsUsed) ? result.hintsUsed : 0;
+    const totalMarks = Number.isFinite(result.totalMarks) ? result.totalMarks : totalQuestions * MARKS_PER_CORRECT;
+    const baseMarks = Number.isFinite(result.baseMarks)
+      ? result.baseMarks
+      : (correctAnswers * MARKS_PER_CORRECT) + (incorrectAnswers * MARKS_PER_INCORRECT);
+    const pointsDeductedForHints = Number.isFinite(result.pointsDeductedForHints) ? result.pointsDeductedForHints : hintsUsed * HINT_DEDUCTION;
+    const obtainedMarks = Number.isFinite(result.obtainedMarks) ? result.obtainedMarks : baseMarks - pointsDeductedForHints;
+    const accuracy = Number.isFinite(result.accuracy)
+      ? Math.round(result.accuracy)
+      : clampPercentage(totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0);
     const finalScore = Number.isFinite(result.score) ? Math.round(result.score) : accuracy;
-    const baseScore = Number.isFinite(result.baseScore) ? Math.round(result.baseScore) : finalScore;
+    const baseScore = Number.isFinite(result.baseScore)
+      ? Math.round(result.baseScore)
+      : clampPercentage(totalMarks > 0 ? (baseMarks / totalMarks) * 100 : 0);
 
     let distinction = 'Certificate of Completion';
     let distinctionTone = 'completion';
@@ -107,14 +122,17 @@ const Certificate = () => {
       accuracy,
       finalScore,
       baseScore,
+      totalMarks,
+      baseMarks,
+      obtainedMarks,
       distinction,
       distinctionTone,
-      hintsUsed: Number.isFinite(result.hintsUsed) ? result.hintsUsed : 0,
+      hintsUsed,
       tabSwitchCount: Number.isFinite(result.tabSwitchCount) ? result.tabSwitchCount : 0,
       timeTaken: formatDuration(result.timeTaken),
       autoSubmitted: !!result.autoSubmitted,
       autoSubmitReason: result.autoSubmitReason || '',
-      pointsDeductedForHints: Number.isFinite(result.pointsDeductedForHints) ? result.pointsDeductedForHints : 0
+      pointsDeductedForHints
     };
   }, [result]);
 
@@ -203,8 +221,8 @@ const Certificate = () => {
 
           <section className="certificate-metrics">
             <article className="metric-card">
-              <span className="metric-label">Final Score</span>
-              <strong className="metric-value">{certificateDetails.finalScore}%</strong>
+              <span className="metric-label">Obtained Marks</span>
+              <strong className="metric-value">{certificateDetails.obtainedMarks}/{certificateDetails.totalMarks}</strong>
             </article>
             <article className="metric-card">
               <span className="metric-label">Accuracy</span>
@@ -236,7 +254,7 @@ const Certificate = () => {
               <div className="detail-row"><span>Issue Date</span><strong>{issuedDate}</strong></div>
             </div>
             <div>
-              <div className="detail-row"><span>Base Score</span><strong>{certificateDetails.baseScore}%</strong></div>
+              <div className="detail-row"><span>Base Marks</span><strong>{certificateDetails.baseMarks}</strong></div>
               <div className="detail-row"><span>Incorrect</span><strong>{certificateDetails.incorrectAnswers}</strong></div>
               <div className="detail-row"><span>Skipped</span><strong>{certificateDetails.skippedAnswers}</strong></div>
               <div className="detail-row"><span>Tab Switches</span><strong>{certificateDetails.tabSwitchCount}</strong></div>
@@ -250,7 +268,7 @@ const Certificate = () => {
                 ? `Attempt was auto-submitted (${certificateDetails.autoSubmitReason || 'system policy'}).`
                 : 'Attempt was submitted normally by the student.'}
               {certificateDetails.pointsDeductedForHints > 0
-                ? ` Score adjusted by ${certificateDetails.pointsDeductedForHints} points due to hint usage.`
+                ? ` Score adjusted by ${certificateDetails.pointsDeductedForHints} marks due to hint usage.`
                 : ''}
             </p>
           </section>

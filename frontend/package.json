@@ -28,5 +28,8 @@
     "react-router-dom": "^7.9.5",
     "uuid": "^13.0.0",
     "vite": "^7.2.2"
+  },
+  "devDependencies": {
+    "baseline-browser-mapping": "^2.10.0"
   }
 }

@@ -16,8 +16,12 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [otpMode, setOtpMode] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [pendingRole, setPendingRole] = useState('student');
   
-  const { register } = useAuth();
+  const { register, verifyRegistrationOtp, resendRegistrationOtp } = useAuth();
   const navigate = useNavigate();
 
   // Handle input change
@@ -70,12 +74,19 @@ const Register = () => {
       setLoading(true);
       setMessage('');
       
-      await register(formData.email, formData.password, formData.fullName, formData.role);
-      
-      // Redirect based on role
-      if (formData.role === 'teacher') {
+      const response = await register(formData.email, formData.password, formData.fullName, formData.role);
+
+      if (response?.requiresOtpVerification) {
+        setOtpMode(true);
+        setPendingEmail(response.email || formData.email.trim().toLowerCase());
+        setPendingRole(formData.role);
+        setMessage(response.message || 'OTP sent. Please verify to complete registration.');
+        return;
+      }
+
+      if (response?.user?.role === 'teacher') {
         navigate('/teacher/dashboard');
-      } else {
+      } else if (response?.user?.role === 'student') {
         navigate('/student/quizzes');
       }
     } catch (error) {
@@ -88,6 +99,48 @@ const Register = () => {
       }
       
       setMessage(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpVerification = async (e) => {
+    e.preventDefault();
+    setErrors({});
+    setMessage('');
+
+    if (!/^\d{6}$/.test(otpCode.trim())) {
+      setErrors({ otp: 'Enter a valid 6-digit OTP' });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await verifyRegistrationOtp(pendingEmail, otpCode.trim());
+      const role = response?.user?.role || pendingRole;
+
+      if (role === 'teacher') {
+        navigate('/teacher/dashboard');
+      } else {
+        navigate('/student/quizzes');
+      }
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      setMessage(error.message || 'Failed to verify OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      setLoading(true);
+      setMessage('');
+      await resendRegistrationOtp(pendingEmail);
+      setMessage('A new OTP has been sent to your email.');
+    } catch (error) {
+      console.error('OTP resend error:', error);
+      setMessage(error.message || 'Failed to resend OTP');
     } finally {
       setLoading(false);
     }
@@ -112,7 +165,9 @@ const Register = () => {
             <ThemeSwitcher compact />
           </div>
           <h2 className="gradient-text text-center mb-2">Create Account</h2>
-          <p className="text-secondary text-center mb-4">Join our quiz platform today</p>
+          <p className="text-secondary text-center mb-4">
+            {otpMode ? 'Verify your email to activate account' : 'Join our quiz platform today'}
+          </p>
           
           {message && (
             <div className={`alert ${message.includes('Failed') ? 'alert-danger' : 'alert-success'} fade show`} role="alert">
@@ -120,86 +175,128 @@ const Register = () => {
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className="auth-form-grid">
-            <div className="auth-field">
-              <label htmlFor="fullName" className="form-label">Full Name</label>
-              <input
-                type="text"
-                className={`form-control input-glass ${errors.fullName ? 'is-invalid' : ''}`}
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="Enter your full name"
-              />
-              {errors.fullName && <div className="invalid-feedback">{errors.fullName}</div>}
-            </div>
-            
-            <div className="auth-field">
-              <label htmlFor="email" className="form-label">Email</label>
-              <input
-                type="email"
-                className={`form-control input-glass ${errors.email ? 'is-invalid' : ''}`}
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-              />
-              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-            </div>
-            
-            <div className="auth-field">
-              <label htmlFor="password" className="form-label">Password</label>
-              <input
-                type="password"
-                className={`form-control input-glass ${errors.password ? 'is-invalid' : ''}`}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Create a password"
-              />
-              {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-            </div>
-            
-            <div className="auth-field">
-              <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-              <input
-                type="password"
-                className={`form-control input-glass ${errors.confirmPassword ? 'is-invalid' : ''}`}
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirm your password"
-              />
-              {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
-            </div>
-            
-            <div className="auth-field">
-              <label htmlFor="role" className="form-label">I am a...</label>
-              <select
-                className="form-select input-glass"
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
+          {!otpMode ? (
+            <form onSubmit={handleSubmit} className="auth-form-grid">
+              <div className="auth-field">
+                <label htmlFor="fullName" className="form-label">Full Name</label>
+                <input
+                  type="text"
+                  className={`form-control input-glass ${errors.fullName ? 'is-invalid' : ''}`}
+                  id="fullName"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  placeholder="Enter your full name"
+                />
+                {errors.fullName && <div className="invalid-feedback">{errors.fullName}</div>}
+              </div>
+              
+              <div className="auth-field">
+                <label htmlFor="email" className="form-label">Email</label>
+                <input
+                  type="email"
+                  className={`form-control input-glass ${errors.email ? 'is-invalid' : ''}`}
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
+                />
+                {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+              </div>
+              
+              <div className="auth-field">
+                <label htmlFor="password" className="form-label">Password</label>
+                <input
+                  type="password"
+                  className={`form-control input-glass ${errors.password ? 'is-invalid' : ''}`}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Create a password"
+                />
+                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+              </div>
+              
+              <div className="auth-field">
+                <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+                <input
+                  type="password"
+                  className={`form-control input-glass ${errors.confirmPassword ? 'is-invalid' : ''}`}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm your password"
+                />
+                {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
+              </div>
+              
+              <div className="auth-field">
+                <label htmlFor="role" className="form-label">I am a...</label>
+                <select
+                  className="form-select input-glass"
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                >
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                </select>
+              </div>
+              
+              <button type="submit" className="btn btn-gradient w-100 py-2" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Creating Account...
+                  </>
+                ) : 'Register'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleOtpVerification} className="auth-form-grid">
+              <div className="auth-field">
+                <label htmlFor="otp" className="form-label">Enter OTP</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  className={`form-control input-glass ${errors.otp ? 'is-invalid' : ''}`}
+                  id="otp"
+                  name="otp"
+                  value={otpCode}
+                  onChange={(e) => {
+                    setOtpCode(e.target.value.replace(/\D/g, ''));
+                    if (errors.otp) setErrors({});
+                  }}
+                  placeholder="6-digit code"
+                />
+                {errors.otp && <div className="invalid-feedback">{errors.otp}</div>}
+                <small className="text-secondary">Code sent to {pendingEmail}</small>
+              </div>
+
+              <button type="submit" className="btn btn-gradient w-100 py-2" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Verifying...
+                  </>
+                ) : 'Verify OTP'}
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-outline-secondary w-100 py-2"
+                disabled={loading}
+                onClick={handleResendOtp}
               >
-                <option value="student">Student</option>
-                <option value="teacher">Teacher</option>
-              </select>
-            </div>
-            
-            <button type="submit" className="btn btn-gradient w-100 py-2" disabled={loading}>
-              {loading ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Creating Account...
-                </>
-              ) : 'Register'}
-            </button>
-          </form>
+                Resend OTP
+              </button>
+            </form>
+          )}
           
           <hr className="my-4" />
           

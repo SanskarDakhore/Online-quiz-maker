@@ -21,14 +21,39 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, fullName, role) => {
     try {
       const data = await apiService.register(email, password, fullName, role);
-      const user = data.user;
-      
-      setCurrentUser(user);
-      setUserRole(user.role);
+      if (data?.token && data?.user) {
+        const user = data.user;
+        setCurrentUser(user);
+        setUserRole(user.role);
+      }
       
       return data;
     } catch (error) {
       console.error('Registration error:', error);
+      throw error;
+    }
+  };
+
+  const verifyRegistrationOtp = async (email, otp) => {
+    try {
+      const data = await apiService.verifyRegistrationOtp(email, otp);
+      if (data?.token && data?.user) {
+        const user = data.user;
+        setCurrentUser(user);
+        setUserRole(user.role);
+      }
+      return data;
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      throw error;
+    }
+  };
+
+  const resendRegistrationOtp = async (email) => {
+    try {
+      return await apiService.resendRegistrationOtp(email);
+    } catch (error) {
+      console.error('OTP resend error:', error);
       throw error;
     }
   };
@@ -163,6 +188,8 @@ export const AuthProvider = ({ children }) => {
     userRole,
     loading,
     register,
+    verifyRegistrationOtp,
+    resendRegistrationOtp,
     login,
     logout,
     getCurrentUser

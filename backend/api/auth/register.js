@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
 import User from '../../server/models/User.js';
 import { connectToDatabase } from '../../server/utils/connectDb.js';
-import { serializeUser } from '../_lib/serializers.js';
+import { buildOtpPayload } from '../../server/utils/otp.js';
+import { sendOtpEmail } from '../../server/utils/otpEmail.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -28,38 +28,53 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Role must be teacher or student' });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedRole = role.toLowerCase();
+
     // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser && existingUser.isVerified) {
       return res.status(400).json({ error: 'User already exists with this email' });
     }
 
     // Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const { otp, otpHash, otpExpiresAt } = buildOtpPayload(normalizedEmail);
 
-    // Create new user
-    const user = new User({
-      uid: randomUUID(),
-      email: email.toLowerCase(),
-      password: hashedPassword,
-      name: fullName.trim(),
-      role: role.toLowerCase(),
-      badges: role === 'student' ? ['Quiz Rookie'] : []
-    });
+    let user = existingUser;
+    if (user) {
+      user.password = hashedPassword;
+      user.name = fullName.trim();
+      user.role = normalizedRole;
+      user.badges = normalizedRole === 'student' ? ['Quiz Rookie'] : [];
+      user.isVerified = false;
+      user.otpHash = otpHash;
+      user.otpExpiresAt = otpExpiresAt;
+      user.otpAttempts = 0;
+    } else {
+      // Create new user
+      user = new User({
+        uid: randomUUID(),
+        email: normalizedEmail,
+        password: hashedPassword,
+        name: fullName.trim(),
+        role: normalizedRole,
+        badges: normalizedRole === 'student' ? ['Quiz Rookie'] : [],
+        isVerified: false,
+        otpHash,
+        otpExpiresAt,
+        otpAttempts: 0
+      });
+    }
 
     await user.save();
+    await sendOtpEmail({ to: normalizedEmail, otp, fullName: user.name });
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.uid, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.status(201).json({
-      token,
-      user: serializeUser(user)
+    res.status(existingUser ? 200 : 201).json({
+      requiresOtpVerification: true,
+      email: normalizedEmail,
+      message: 'OTP sent to your email. Please verify to complete registration.'
     });
   } catch (error) {
     console.error('Registration error:', error);

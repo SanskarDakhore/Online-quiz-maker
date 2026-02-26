@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const NAV_ITEMS = {
   teacher: [
@@ -16,8 +17,10 @@ const NAV_ITEMS = {
 const isActiveLink = (currentPath, targetPath) => currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
 
 const AppSidebar = ({ role, currentPath, onLogout, onBrandClick, showBrandPulse = false, logoutDisabled = false }) => {
+  const { currentUser } = useAuth();
   const items = NAV_ITEMS[role] || [];
   const roleLabel = role === 'teacher' ? 'Teacher' : 'Student';
+  const displayName = currentUser?.name?.trim() || currentUser?.email?.split('@')?.[0] || roleLabel;
 
   return (
     <>
@@ -27,6 +30,9 @@ const AppSidebar = ({ role, currentPath, onLogout, onBrandClick, showBrandPulse 
         </span>
         <h3 className="gradient-text mb-1">QuizMaster</h3>
         <small className="text-muted">{roleLabel}</small>
+        <div className="small text-white mt-2" title={displayName}>
+          Hello, {displayName}
+        </div>
         {showBrandPulse && <div className="sidebar-brand-pulse" />}
       </div>
 

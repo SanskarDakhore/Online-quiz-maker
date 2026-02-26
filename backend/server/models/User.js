@@ -24,6 +24,22 @@ const userSchema = new mongoose.Schema({
     enum: ['teacher', 'student'],
     required: true
   },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  otpHash: {
+    type: String,
+    default: null
+  },
+  otpExpiresAt: {
+    type: Date,
+    default: null
+  },
+  otpAttempts: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

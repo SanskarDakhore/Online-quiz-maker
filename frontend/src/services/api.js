@@ -66,8 +66,28 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify({ email, password, fullName, role })
     });
+    if (data.token) {
+      this.setToken(data.token);
+    } else {
+      this.removeToken();
+    }
+    return data;
+  }
+
+  async verifyRegistrationOtp(email, otp) {
+    const data = await this.request('/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp })
+    });
     if (data.token) this.setToken(data.token);
     return data;
+  }
+
+  async resendRegistrationOtp(email) {
+    return this.request('/auth/resend-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
   }
 
   async login(email, password) {

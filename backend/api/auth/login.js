@@ -35,6 +35,14 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    if (!user.isVerified) {
+      return res.status(403).json({
+        error: 'Account not verified. Please verify OTP before logging in.',
+        requiresOtpVerification: true,
+        email: user.email
+      });
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.uid, role: user.role },

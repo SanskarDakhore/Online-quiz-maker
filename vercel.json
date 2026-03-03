@@ -13,7 +13,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "backend/api/auth/*.js",
+      "src": "backend/api/auth/[...route].js",
       "use": "@vercel/node"
     },
     {

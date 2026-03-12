@@ -46,14 +46,19 @@ class ApiService {
     }
 
     const response = await fetch(url, { ...options, headers });
+    const isAuthEndpoint = /^\/auth\/(login|register|verify-otp|resend-otp)$/i.test(endpoint);
+    const errorData = await response.clone().json().catch(() => ({}));
 
     if (response.status === 401 || response.status === 403) {
-      this.removeToken();
-      throw new Error('Session expired. Please log in again.');
+      const hasToken = Boolean(this.token);
+      if (!isAuthEndpoint && hasToken) {
+        this.removeToken();
+        throw new Error('Session expired. Please log in again.');
+      }
+      throw new Error(errorData.error || `HTTP ${response.status}`);
     }
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || `HTTP ${response.status}`);
     }
 

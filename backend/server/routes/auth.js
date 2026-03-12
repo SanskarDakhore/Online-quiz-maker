@@ -211,7 +211,8 @@ router.post('/login', checkDBConnection, async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    if (!user.isVerified) {
+    // Backward compatibility: legacy users may not have isVerified field.
+    if (user.isVerified === false) {
       return res.status(403).json({
         error: 'Account not verified. Please verify OTP before logging in.',
         requiresOtpVerification: true,

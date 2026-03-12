@@ -1,6 +1,6 @@
-import Quiz from '../../../server/models/Quiz.js';
-import { connectToDatabase } from '../../../server/utils/connectDb.js';
-import { requireAuth, requireRole } from '../../_lib/auth.js';
+import Quiz from '../../server/models/Quiz.js';
+import { connectToDatabase } from '../../server/utils/connectDb.js';
+import { requireAuth, requireRole } from '../../api/_lib/auth.js';
 
 export default async function handler(req, res) {
   const { id } = req.query;

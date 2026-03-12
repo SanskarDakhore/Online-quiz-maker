@@ -1,7 +1,7 @@
 import Quiz from '../../server/models/Quiz.js';
 import { connectToDatabase } from '../../server/utils/connectDb.js';
-import { requireAuth, requireRole } from '../_lib/auth.js';
-import { serializeQuizForTeacher } from '../_lib/serializers.js';
+import { requireAuth, requireRole } from '../../api/_lib/auth.js';
+import { serializeQuizForTeacher } from '../../api/_lib/serializers.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

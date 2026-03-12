@@ -1,5 +1,5 @@
 // Simple MongoDB connection test
-const uri = "mongodb+srv://romabanik4_db_user:8dQxZft95F8rUTQL@onlinequizmaking.aeenpfm.mongodb.net/quizmaster?retryWrites=true&w=majority";
+const uri = "mongodb+srv://workwithcarbon_db_user:hISl4UCeiJW4Y1LW@cluster0.jhvvjbw.mongodb.net/quizmaster?retryWrites=true&w=majority";
 
 console.log('MongoDB Connection String:');
 console.log(uri);

@@ -1,11 +1,11 @@
 import Quiz from '../../server/models/Quiz.js';
 import { v4 as uuidv4 } from 'uuid';
 import { connectToDatabase } from '../../server/utils/connectDb.js';
-import { requireAuth, requireRole } from '../_lib/auth.js';
+import { requireAuth, requireRole } from '../../api/_lib/auth.js';
 import {
   serializeQuizForStudentList,
   serializeQuizForTeacher
-} from '../_lib/serializers.js';
+} from '../../api/_lib/serializers.js';
 
 const normalizeTimerMinutes = (value, fallback = 10) => {
   const parsed = Number(value);

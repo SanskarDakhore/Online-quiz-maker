@@ -9,6 +9,10 @@
       }
     },
     {
+      "src": "backend/api/activate-db.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "backend/api/health.js",
       "use": "@vercel/node"
     },
@@ -17,35 +21,11 @@
       "use": "@vercel/node"
     },
     {
-      "src": "backend/api/quizzes/index.js",
+      "src": "backend/api/quizzes/[...route].js",
       "use": "@vercel/node"
     },
     {
-      "src": "backend/api/quizzes/my-quizzes.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/quizzes/[id].js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/quizzes/[id]/publish.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/results/index.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/results/my-results.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/results/[id].js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/results/quiz/[quizId].js",
+      "src": "backend/api/results/[...route].js",
       "use": "@vercel/node"
     }
   ],

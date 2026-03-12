@@ -1,10 +1,10 @@
 import Quiz from '../../server/models/Quiz.js';
 import { connectToDatabase } from '../../server/utils/connectDb.js';
-import { requireAuth, requireRole } from '../_lib/auth.js';
+import { requireAuth, requireRole } from '../../api/_lib/auth.js';
 import {
   serializeQuizForStudentPlay,
   serializeQuizForTeacher
-} from '../_lib/serializers.js';
+} from '../../api/_lib/serializers.js';
 
 const findQuiz = async (quizId) => Quiz.findOne({ quizId });
 const normalizeTimerMinutes = (value, fallback = 10) => {

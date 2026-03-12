@@ -1,8 +1,8 @@
 import Result from '../../server/models/Result.js';
 import Quiz from '../../server/models/Quiz.js';
 import { connectToDatabase } from '../../server/utils/connectDb.js';
-import { requireAuth, requireRole } from '../_lib/auth.js';
-import { serializeResult } from '../_lib/serializers.js';
+import { requireAuth, requireRole } from '../../api/_lib/auth.js';
+import { serializeResult } from '../../api/_lib/serializers.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

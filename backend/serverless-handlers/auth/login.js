@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../../server/models/User.js';
 import { connectToDatabase } from '../../server/utils/connectDb.js';
-import { serializeUser } from '../_lib/serializers.js';
+import { serializeUser } from '../../api/_lib/serializers.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

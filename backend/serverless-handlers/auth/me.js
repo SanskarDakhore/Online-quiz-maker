@@ -1,6 +1,6 @@
 import { connectToDatabase } from '../../server/utils/connectDb.js';
-import { requireAuth } from '../_lib/auth.js';
-import { serializeUser } from '../_lib/serializers.js';
+import { requireAuth } from '../../api/_lib/auth.js';
+import { serializeUser } from '../../api/_lib/serializers.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

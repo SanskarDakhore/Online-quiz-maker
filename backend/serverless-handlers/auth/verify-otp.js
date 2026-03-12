@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../../server/models/User.js';
 import { connectToDatabase } from '../../server/utils/connectDb.js';
-import { serializeUser } from '../_lib/serializers.js';
+import { serializeUser } from '../../api/_lib/serializers.js';
 import { hashOtp, isOtpExpired, isValidOtpFormat } from '../../server/utils/otp.js';
 
 const MAX_OTP_ATTEMPTS = 5;

@@ -3,7 +3,7 @@
 ## Connection String
 Your MongoDB connection string is:
 ```
-mongodb+srv://romabanik4_db_user:8dQxZft95F8rUTQL@onlinequizmaking.aeenpfm.mongodb.net/quizmaster?retryWrites=true&w=majority
+mongodb+srv://workwithcarbon_db_user:hISl4UCeiJW4Y1LW@cluster0.jhvvjbw.mongodb.net/quizmaster?retryWrites=true&w=majority
 ```
 
 ## Testing Connection
@@ -17,7 +17,7 @@ mongodb+srv://romabanik4_db_user:8dQxZft95F8rUTQL@onlinequizmaking.aeenpfm.mongo
 ### Option 2: Using Command Line
 Run this command in your terminal:
 ```bash
-mongosh "mongodb+srv://romabanik4_db_user:8dQxZft95F8rUTQL@onlinequizmaking.aeenpfm.mongodb.net/quizmaster?retryWrites=true&w=majority"
+mongosh "mongodb+srv://workwithcarbon_db_user:hISl4UCeiJW4Y1LW@cluster0.jhvvjbw.mongodb.net/quizmaster?retryWrites=true&w=majority"
 ```
 
 ## Common Connection Issues

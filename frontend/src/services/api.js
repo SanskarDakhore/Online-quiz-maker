@@ -5,18 +5,12 @@ const normalizeApiBase = (raw) => {
 };
 
 const ENV_API_BASE_URL = normalizeApiBase(import.meta.env.VITE_API_BASE_URL);
-const IS_LOCAL =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-const IS_VERCEL =
-  typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
 
-// Fallback for frontend-only Vercel deploys where /api routes are not hosted on same domain.
-const DEFAULT_VERCEL_API_BASE_URL = 'https://online-quiz-maker-qncd.onrender.com/api';
+if (!ENV_API_BASE_URL) {
+  throw new Error('VITE_API_BASE_URL must be defined in the frontend .env file');
+}
 
-export const API_BASE_URL =
-  ENV_API_BASE_URL ||
-  (IS_LOCAL ? 'http://localhost:5000/api' : IS_VERCEL ? DEFAULT_VERCEL_API_BASE_URL : '/api');
+export const API_BASE_URL = ENV_API_BASE_URL;
 
 class ApiService {
   constructor() {

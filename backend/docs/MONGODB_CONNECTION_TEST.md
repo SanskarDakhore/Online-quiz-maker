@@ -1,58 +1,44 @@
 # MongoDB Connection Test Guide
 
 ## Connection String
-Your MongoDB connection string is:
-```
-mongodb+srv://workwithcarbon_db_user:hISl4UCeiJW4Y1LW@cluster0.jhvvjbw.mongodb.net/quizmaster?retryWrites=true&w=majority
+Store your MongoDB connection string only in `backend/server/.env`:
+
+```env
+MONGODB_URI=your_mongodb_connection_string
 ```
 
 ## Testing Connection
 
 ### Option 1: Using MongoDB Compass
-1. Download and install MongoDB Compass if you haven't already
-2. Open MongoDB Compass
-3. Paste the connection string above
-4. Click "Connect"
+1. Open MongoDB Compass.
+2. Copy the `MONGODB_URI` value from your local `.env`.
+3. Paste it into Compass and connect.
 
 ### Option 2: Using Command Line
-Run this command in your terminal:
+Run this command in your terminal after loading your env:
+
 ```bash
-mongosh "mongodb+srv://workwithcarbon_db_user:hISl4UCeiJW4Y1LW@cluster0.jhvvjbw.mongodb.net/quizmaster?retryWrites=true&w=majority"
+mongosh "$MONGODB_URI"
 ```
 
 ## Common Connection Issues
 
-### 1. IP Not Whitelisted
-**Solution**: Add your IP to MongoDB Atlas whitelist
-- Go to MongoDB Atlas Dashboard
-- Network Access → Add IP Address
-- Use "Add Current IP Address" or add `0.0.0.0/0` for development
+### 1. Network Access
+Confirm the database accepts connections from your current environment.
 
-### 2. Incorrect Credentials
-**Solution**: Verify username and password
-- Check if the username/password in the connection string is correct
-- Reset password if needed in MongoDB Atlas
+### 2. Credentials
+Verify the username and password embedded in `MONGODB_URI`.
 
-### 3. Cluster Paused
-**Solution**: Resume cluster
-- Go to Clusters in MongoDB Atlas
-- Check if your cluster is paused
-- Click "Resume" if it is paused
+### 3. Database Availability
+Confirm the cluster or database service is running.
 
 ## After Fixing Connection
 
 1. Restart your backend server:
+
 ```bash
-cd d:\Capstone\server
+cd backend/server
 npm start
 ```
 
-2. Check health endpoint again:
-```bash
-curl.exe -s http://localhost:5000/api/health
-```
-
-You should see:
-```json
-{"status":"OK","message":"QuizMaster API is running","database":"Connected"}
-```
+2. Check the health endpoint using the URL from your environment config.

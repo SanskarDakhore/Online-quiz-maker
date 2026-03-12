@@ -1,101 +1,20 @@
-# Student Login Connection Issue - FIXED
+# Student Login Connection Issue
 
-## ✅ Issue Resolution
+## Resolution
 
-The "Cannot connect to the server" error for student login has been resolved. Both servers are now running correctly:
+Student login depends on:
 
-1. **Backend Server**: Running on port 5000 with MongoDB connected
-2. **Frontend Server**: Running on port 3001
-3. **Database**: Successfully connected to MongoDB Atlas
+- A working backend API URL from environment configuration.
+- A reachable frontend app URL from environment configuration.
+- Valid database credentials stored only in `.env`.
 
-## 🧪 Verification Results
+## Verification
 
-```
-🧪 Starting full login test...
+1. Start the backend with the values from `backend/server/.env`.
+2. Start the frontend with the values from `frontend/.env`.
+3. Verify the backend health endpoint using the API base URL from your environment.
+4. Test student and teacher login with your local test users.
 
-1. Checking backend health...
-   ✅ Backend is running
-   ✅ Database is connected
+## Rule
 
-2. Testing student login...
-   ✅ Student login successful
-   🎯 Student token received
-   👤 Student role: student
-
-3. Testing teacher login...
-   ✅ Teacher login successful
-   🎯 Teacher token received
-   👤 Teacher role: teacher
-
-🎉 ALL TESTS PASSED!
-✅ Student login is working
-✅ Teacher login is working
-✅ Backend is fully functional
-```
-
-## 🌐 Access Instructions
-
-### Application URL
-Open your browser and go to: **http://localhost:3001**
-
-### Student Login Credentials
-- **Email**: student@test.com
-- **Password**: Student123!
-
-### Teacher Login Credentials
-- **Email**: admin@test.com
-- **Password**: Admin123!
-
-## 🛠️ Troubleshooting (If Needed)
-
-### Restart Servers
-If you encounter issues again:
-
-```powershell
-# Kill existing processes
-Get-NetTCPConnection -LocalPort 5000 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
-Get-NetTCPConnection -LocalPort 3001 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
-
-# Start backend server (Terminal 1)
-cd d:\Capstone\server
-npm start
-
-# Start frontend server (Terminal 2)
-cd d:\Capstone
-npm run dev
-```
-
-### Verify Connection
-```powershell
-# Check backend health
-curl.exe -s http://localhost:5000/api/health
-
-# Should return:
-# {"status":"OK","message":"QuizMaster API is running","database":"Connected"}
-```
-
-## 📋 Features Available
-
-### Student Features
-- ✅ Browse available quizzes
-- ✅ Take quizzes
-- ✅ View results
-- ✅ View certificates
-- ✅ Manage profile
-
-### Teacher Features
-- ✅ Create quizzes
-- ✅ Edit quizzes
-- ✅ Publish/unpublish quizzes
-- ✅ View quiz results
-- ✅ Manage quizzes
-
-## 🎉 Success Confirmation
-
-The student login is now working perfectly:
-- Authentication is functional
-- Database connectivity is established
-- All API endpoints are accessible
-- User roles are properly assigned
-
-You can now successfully log in as a student and access all quiz functionalities!
+Keep secrets, database connection strings, and deployment URLs in `.env` files only.

@@ -1,85 +1,78 @@
-// Full login test for both student and teacher
+const API_BASE_URL = process.env.API_BASE_URL;
+const APP_URL = process.env.APP_URL;
+
 async function fullLoginTest() {
   try {
-    console.log('🧪 Starting full login test...\n');
-    
-    // Test backend health
+    if (!API_BASE_URL) {
+      throw new Error('API_BASE_URL is not configured');
+    }
+
+    console.log('Starting full login test...\n');
+
     console.log('1. Checking backend health...');
-    const healthResponse = await fetch('http://localhost:5000/api/health');
+    const healthResponse = await fetch(`${API_BASE_URL}/health`);
     const healthData = await healthResponse.json();
-    
+
     if (healthData.status !== 'OK') {
       throw new Error('Backend is not healthy');
     }
-    
-    console.log('   ✅ Backend is running');
-    console.log('   ✅ Database is connected\n');
-    
-    // Test student login
+
+    console.log('   Backend is running');
+    console.log(`   Database status: ${healthData.database}\n`);
+
     console.log('2. Testing student login...');
-    const studentLoginData = {
-      email: 'student@test.com',
-      password: 'Student123!'
-    };
-    
-    const studentLoginResponse = await fetch('http://localhost:5000/api/auth/login', {
+    const studentLoginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(studentLoginData)
+      body: JSON.stringify({
+        email: 'student@test.com',
+        password: 'Student123!'
+      })
     });
-    
-    if (studentLoginResponse.ok) {
-      const studentData = await studentLoginResponse.json();
-      console.log('   ✅ Student login successful');
-      console.log('   🎯 Student token received');
-      console.log('   👤 Student role:', studentData.user.role);
-    } else {
+
+    if (!studentLoginResponse.ok) {
       const errorData = await studentLoginResponse.json();
       throw new Error(`Student login failed: ${errorData.error}`);
     }
-    
+
+    const studentData = await studentLoginResponse.json();
+    console.log('   Student login successful');
+    console.log(`   Student role: ${studentData.user.role}`);
     console.log('');
-    
-    // Test teacher login
+
     console.log('3. Testing teacher login...');
-    const teacherLoginData = {
-      email: 'admin@test.com',
-      password: 'Admin123!'
-    };
-    
-    const teacherLoginResponse = await fetch('http://localhost:5000/api/auth/login', {
+    const teacherLoginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(teacherLoginData)
+      body: JSON.stringify({
+        email: 'admin@test.com',
+        password: 'Admin123!'
+      })
     });
-    
-    if (teacherLoginResponse.ok) {
-      const teacherData = await teacherLoginResponse.json();
-      console.log('   ✅ Teacher login successful');
-      console.log('   🎯 Teacher token received');
-      console.log('   👤 Teacher role:', teacherData.user.role);
-    } else {
+
+    if (!teacherLoginResponse.ok) {
       const errorData = await teacherLoginResponse.json();
       throw new Error(`Teacher login failed: ${errorData.error}`);
     }
-    
-    console.log('\n🎉 ALL TESTS PASSED!');
-    console.log('✅ Student login is working');
-    console.log('✅ Teacher login is working');
-    console.log('✅ Backend is fully functional');
-    console.log('\n🌐 Access the application at: http://localhost:3001');
-    
+
+    const teacherData = await teacherLoginResponse.json();
+    console.log('   Teacher login successful');
+    console.log(`   Teacher role: ${teacherData.user.role}`);
+
+    console.log('\nAll tests passed.');
+    if (APP_URL) {
+      console.log(`App URL: ${APP_URL}`);
+    }
   } catch (error) {
-    console.error('❌ Test failed:', error.message);
-    console.log('\n🔧 Troubleshooting steps:');
-    console.log('1. Make sure both servers are running');
-    console.log('2. Check if ports 5000 and 3001 are available');
-    console.log('3. Verify MongoDB Atlas connection');
-    console.log('4. Restart both servers if needed');
+    console.error('Test failed:', error.message);
+    console.log('\nTroubleshooting steps:');
+    console.log('1. Make sure the backend is running.');
+    console.log('2. Check the app and API URLs configured in your .env files.');
+    console.log('3. Verify database connectivity.');
   }
 }
 

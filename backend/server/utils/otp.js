@@ -3,7 +3,13 @@ import crypto from 'node:crypto';
 const OTP_LENGTH = 6;
 const OTP_TTL_MINUTES = Number(process.env.OTP_TTL_MINUTES || 10);
 
-const getOtpSecret = () => process.env.OTP_SECRET || process.env.JWT_SECRET || 'otp-fallback-secret';
+const getOtpSecret = () => {
+  const secret = process.env.OTP_SECRET || process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('OTP_SECRET or JWT_SECRET must be configured');
+  }
+  return secret;
+};
 
 export const generateNumericOtp = (length = OTP_LENGTH) => {
   let otp = '';

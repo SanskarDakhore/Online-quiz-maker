@@ -52,14 +52,14 @@ npm install
 cd ../server
 npm run dev
 ```
-Backend: `http://localhost:5000`
+Backend URL: set via `backend/server/.env`
 
 ### 4) Run frontend (Vite)
 ```bash
 cd ../../frontend
 npm run dev
 ```
-Frontend: `http://localhost:3000` (or Vite-assigned port)
+Frontend URL: use the Vite local URL shown in the terminal
 
 ### Convenience commands (from `frontend/`)
 ```bash
@@ -79,7 +79,7 @@ PORT=5000
 
 ### Frontend (`frontend/.env`, optional)
 ```env
-VITE_API_BASE_URL=http://localhost:5000/api
+VITE_API_BASE_URL=your_backend_api_base_url
 ```
 
 ## Notes

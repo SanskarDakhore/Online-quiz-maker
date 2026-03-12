@@ -1,26 +1,14 @@
-// Simple MongoDB connection test
-const uri = "mongodb+srv://workwithcarbon_db_user:hISl4UCeiJW4Y1LW@cluster0.jhvvjbw.mongodb.net/quizmaster?retryWrites=true&w=majority";
+// Simple MongoDB connection test helper
+const uri = process.env.MONGODB_URI;
 
-console.log('MongoDB Connection String:');
-console.log(uri);
-console.log('\nTo test this connection:');
+if (!uri) {
+  console.error('MONGODB_URI is not set. Add it to backend/server/.env before running this script.');
+  process.exit(1);
+}
 
-console.log('\n1. Visit MongoDB Atlas dashboard:');
-console.log('   https://cloud.mongodb.com/');
-
-console.log('\n2. Check Network Access settings:');
-console.log('   - Make sure your current IP is whitelisted');
-console.log('   - Or add 0.0.0.0/0 for development access');
-
-console.log('\n3. Verify cluster status:');
-console.log('   - Check if your cluster is paused');
-console.log('   - Resume if needed');
-
-console.log('\n4. Test with MongoDB Compass:');
-console.log('   - Download from https://www.mongodb.com/try/download/compass');
-console.log('   - Use the connection string above');
-
-console.log('\n5. Alternative - Add your current IP to whitelist:');
-console.log('   - Visit: https://cloud.mongodb.com/v2#/org/[ORG_ID]/access/ipWhitelist');
-console.log('   - Click "Add IP Address"');
-console.log('   - Select "Add Current IP Address"');
+console.log('MongoDB connection string loaded from environment.');
+console.log('Length:', uri.length);
+console.log('\nNext steps:');
+console.log('1. Verify the database is accepting connections.');
+console.log('2. Confirm network access and credentials if the app cannot connect.');
+console.log('3. Use this same environment variable in local and deployment environments.');

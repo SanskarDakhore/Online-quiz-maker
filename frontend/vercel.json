@@ -28,13 +28,5 @@
     }
   ],
   "cleanUrls": true,
-  "trailingSlash": false,
-  "env": {
-    "MONGODB_URI": "$MONGODB_URI",
-    "JWT_SECRET": "$JWT_SECRET",
-    "ATLAS_PUBLIC_KEY": "$ATLAS_PUBLIC_KEY",
-    "ATLAS_PRIVATE_KEY": "$ATLAS_PRIVATE_KEY",
-    "ATLAS_GROUP_ID": "$ATLAS_GROUP_ID",
-    "ATLAS_CLUSTER_NAME": "$ATLAS_CLUSTER_NAME"
-  }
+  "trailingSlash": false
 }

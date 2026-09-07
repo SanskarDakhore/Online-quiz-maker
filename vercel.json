@@ -1,52 +1,14 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
-      "src": "backend/api/activate-db.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/health.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/auth/[...route].js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/quizzes/[...route].js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/results/[...route].js",
-      "use": "@vercel/node"
-    }
-  ],
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/backend/api/$1"
-    },
-    {
-      "source": "/teacher/(.*)",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/student/(.*)",
-      "destination": "/index.html"
+      "destination": "https://online-quiz-maker-qncd.onrender.com/api/$1"
     },
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }

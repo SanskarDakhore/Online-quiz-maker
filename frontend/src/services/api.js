@@ -4,11 +4,11 @@ const normalizeApiBase = (raw) => {
   return /\/api$/i.test(trimmed) ? trimmed : `${trimmed}/api`;
 };
 
-const ENV_API_BASE_URL = normalizeApiBase(import.meta.env.VITE_API_BASE_URL);
+const defaultBaseUrl = import.meta.env.PROD
+  ? 'https://online-quiz-maker-qncd.onrender.com/api'
+  : 'http://localhost:5000/api';
 
-if (!ENV_API_BASE_URL) {
-  throw new Error('VITE_API_BASE_URL must be defined in the frontend .env file');
-}
+const ENV_API_BASE_URL = normalizeApiBase(import.meta.env.VITE_API_BASE_URL || defaultBaseUrl);
 
 export const API_BASE_URL = ENV_API_BASE_URL;
 

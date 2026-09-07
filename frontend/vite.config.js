@@ -23,5 +23,5 @@ export default defineConfig({
     host: true,
   },
   // Base URL for deployment
-  base: './',
+  base: '/',
 });

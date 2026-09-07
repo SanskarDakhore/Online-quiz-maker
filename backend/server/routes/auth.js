@@ -3,18 +3,23 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
+import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.js';
 import { buildOtpPayload, hashOtp, isOtpExpired, isValidOtpFormat } from '../utils/otp.js';
 import { sendOtpEmail } from '../utils/otpEmail.js';
 
 const router = express.Router();
+const googleClient = new OAuth2Client();
 const MAX_OTP_ATTEMPTS = 5;
 
 const buildAuthResponse = (user) => ({
   uid: user.uid,
   name: user.name,
   email: user.email,
-  role: user.role
+  role: user.role,
+  avatar: user.avatar || null,
+  authProvider: user.authProvider || 'local',
+  badges: user.badges || []
 });
 
 const issueToken = (user) =>
@@ -234,6 +239,100 @@ router.post('/login', checkDBConnection, async (req, res) => {
   }
 });
 
+// Google OAuth Sign-in & Sign-up (Single flow for account creation and login)
+router.post('/google', checkDBConnection, async (req, res) => {
+  try {
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ error: 'JWT_SECRET is not configured on server' });
+    }
+
+    const { credential, role = 'student' } = req.body || {};
+    if (!credential) {
+      return res.status(400).json({ error: 'Google credential token is required' });
+    }
+
+    const googleClientId = process.env.GOOGLE_CLIENT_ID;
+    if (!googleClientId) {
+      return res.status(500).json({ error: 'GOOGLE_CLIENT_ID is not configured on server' });
+    }
+
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: googleClientId
+      });
+    } catch (verifyError) {
+      console.error('Google token verification failed:', verifyError.message);
+      return res.status(401).json({ error: 'Invalid Google authentication token' });
+    }
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      return res.status(400).json({ error: 'Unable to retrieve email from Google profile' });
+    }
+
+    const normalizedEmail = payload.email.toLowerCase();
+    const googleId = payload.sub;
+    const name = payload.name || payload.given_name || normalizedEmail.split('@')[0];
+    const avatar = payload.picture || null;
+
+    // Check if user exists by googleId or by verified email
+    let user = await User.findOne({
+      $or: [
+        { googleId },
+        { email: normalizedEmail }
+      ]
+    });
+
+    if (user) {
+      // Existing user account: update googleId and avatar if missing, ensure verified
+      let changed = false;
+      if (!user.googleId) {
+        user.googleId = googleId;
+        changed = true;
+      }
+      if (!user.avatar && avatar) {
+        user.avatar = avatar;
+        changed = true;
+      }
+      if (!user.isVerified) {
+        user.isVerified = true;
+        user.otpHash = null;
+        user.otpExpiresAt = null;
+        changed = true;
+      }
+      if (changed) {
+        await user.save();
+      }
+    } else {
+      // Create new account
+      const validRole = ['teacher', 'student'].includes(role) ? role : 'student';
+      user = new User({
+        uid: uuidv4(),
+        name,
+        email: normalizedEmail,
+        role: validRole,
+        googleId,
+        avatar,
+        authProvider: 'google',
+        isVerified: true,
+        badges: validRole === 'student' ? ['Quiz Rookie'] : []
+      });
+      await user.save();
+    }
+
+    const token = issueToken(user);
+    res.json({
+      token,
+      user: buildAuthResponse(user)
+    });
+  } catch (error) {
+    console.error('Google OAuth error:', error);
+    res.status(500).json({ error: 'Internal server error: ' + error.message });
+  }
+});
+
 // Get current user
 router.get('/me', checkDBConnection, async (req, res) => {
   try {
@@ -256,13 +355,7 @@ router.get('/me', checkDBConnection, async (req, res) => {
     }
     
     res.json({
-      user: {
-        uid: user.uid,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        badges: user.badges
-      }
+      user: buildAuthResponse(user)
     });
   } catch (error) {
     console.error('Get user error:', error);

@@ -7,7 +7,11 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    sourcemap: true,
+    sourcemap: false,
+    reportCompressedSize: false,
+    target: 'esnext',
+    cssMinify: 'esbuild',
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         manualChunks: {
@@ -18,9 +22,28 @@ export default defineConfig({
       }
     }
   },
+  optimizeDeps: {
+    holdUntilCrawlEnd: false,
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'framer-motion',
+      'chart.js',
+      'react-chartjs-2',
+      'uuid'
+    ],
+    esbuildOptions: {
+      target: 'esnext'
+    }
+  },
   server: {
     port: 3000,
-    host: true,
+    host: 'localhost',
+    strictPort: true,
+    fs: {
+      cachedChecks: true
+    }
   },
   // Base URL for deployment
   base: '/',

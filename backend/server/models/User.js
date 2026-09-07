@@ -17,12 +17,28 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: function() {
+      return this.authProvider === 'local' || !this.googleId;
+    }
   },
   role: {
     type: String,
     enum: ['teacher', 'student'],
     required: true
+  },
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true
+  },
+  avatar: {
+    type: String,
+    default: null
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
   },
   isVerified: {
     type: Boolean,

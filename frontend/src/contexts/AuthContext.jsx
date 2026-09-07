@@ -83,6 +83,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Login or Register with Google OAuth
+  const loginWithGoogle = async (credential, role = 'student') => {
+    try {
+      const data = await apiService.googleAuth(credential, role);
+      const user = data.user;
+
+      // Create session for the user
+      const session = sessionService.createSession(user.uid);
+
+      // Store session ID in localStorage
+      localStorage.setItem('current_session_id', session.sessionId);
+
+      // Store current user in localStorage to prevent immediate redirects
+      localStorage.setItem('current_user', JSON.stringify(user));
+
+      setCurrentUser(user);
+      setUserRole(user.role);
+
+      return data;
+    } catch (error) {
+      console.error('Google OAuth login error:', error);
+      throw error;
+    }
+  };
+
   // Logout
   const logout = async () => {
     try {
@@ -191,6 +216,7 @@ export const AuthProvider = ({ children }) => {
     verifyRegistrationOtp,
     resendRegistrationOtp,
     login,
+    loginWithGoogle,
     logout,
     getCurrentUser
   };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
+import GoogleAuthButton from './GoogleAuthButton';
 import '../bootstrap-theme.css';
 
 const Login = () => {
@@ -84,6 +85,14 @@ const Login = () => {
       setMessage(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = (result) => {
+    if (result?.user?.role === 'teacher') {
+      navigate('/teacher/dashboard');
+    } else {
+      navigate('/student/quizzes');
     }
   };
 
@@ -209,6 +218,19 @@ const Login = () => {
                           </>
                         ) : 'Login as Student'}
                       </button>
+
+                      <div className="d-flex align-items-center my-3 text-muted">
+                        <hr className="flex-grow-1 my-0 border-secondary-subtle" />
+                        <span className="px-2 small text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}>or continue with</span>
+                        <hr className="flex-grow-1 my-0 border-secondary-subtle" />
+                      </div>
+
+                      <GoogleAuthButton
+                        role="student"
+                        buttonText="signin_with"
+                        onSuccess={handleGoogleSuccess}
+                        onError={(err) => setMessage(err.message || 'Failed to sign in with Google')}
+                      />
                     </form>
                   </div>
 
@@ -254,6 +276,19 @@ const Login = () => {
                           </>
                         ) : 'Login as Teacher'}
                       </button>
+
+                      <div className="d-flex align-items-center my-3 text-muted">
+                        <hr className="flex-grow-1 my-0 border-secondary-subtle" />
+                        <span className="px-2 small text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}>or continue with</span>
+                        <hr className="flex-grow-1 my-0 border-secondary-subtle" />
+                      </div>
+
+                      <GoogleAuthButton
+                        role="teacher"
+                        buttonText="signin_with"
+                        onSuccess={handleGoogleSuccess}
+                        onError={(err) => setMessage(err.message || 'Failed to sign in with Google')}
+                      />
                     </form>
                   </div>
                 </div>

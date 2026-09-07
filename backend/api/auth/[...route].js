@@ -1,3 +1,4 @@
+import googleHandler from '../../serverless-handlers/auth/google.js';
 import loginHandler from '../../serverless-handlers/auth/login.js';
 import meHandler from '../../serverless-handlers/auth/me.js';
 import registerHandler from '../../serverless-handlers/auth/register.js';
@@ -5,6 +6,7 @@ import resendOtpHandler from '../../serverless-handlers/auth/resend-otp.js';
 import verifyOtpHandler from '../../serverless-handlers/auth/verify-otp.js';
 
 const routeHandlers = {
+  '/google': googleHandler,
   '/login': loginHandler,
   '/me': meHandler,
   '/register': registerHandler,

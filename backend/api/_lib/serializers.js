@@ -3,6 +3,8 @@ export const serializeUser = (user) => ({
   email: user.email,
   name: user.name,
   role: user.role,
+  avatar: user.avatar || null,
+  authProvider: user.authProvider || 'local',
   badges: user.badges || []
 });
 

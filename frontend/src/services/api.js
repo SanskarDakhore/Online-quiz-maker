@@ -40,7 +40,7 @@ class ApiService {
     }
 
     const response = await fetch(url, { ...options, headers });
-    const isAuthEndpoint = /^\/auth\/(login|register|verify-otp|resend-otp)$/i.test(endpoint);
+    const isAuthEndpoint = /^\/auth\/(login|register|verify-otp|resend-otp|google)$/i.test(endpoint);
     const errorData = await response.clone().json().catch(() => ({}));
 
     if (response.status === 401 || response.status === 403) {
@@ -93,6 +93,15 @@ class ApiService {
     const data = await this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password })
+    });
+    if (data.token) this.setToken(data.token);
+    return data;
+  }
+
+  async googleAuth(credential, role = 'student') {
+    const data = await this.request('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ credential, role })
     });
     if (data.token) this.setToken(data.token);
     return data;

@@ -25,9 +25,21 @@ const AppSidebar = ({ role, currentPath, onLogout, onBrandClick, showBrandPulse 
   return (
     <>
       <div className="mb-4 text-center sidebar-brand" onClick={onBrandClick}>
-        <span className="sidebar-brand-icon-wrap" aria-hidden="true">
-          <i className="bi bi-mortarboard-fill"></i>
-        </span>
+        {currentUser?.avatar ? (
+          <div className="mb-2">
+            <img
+              src={currentUser.avatar}
+              alt={displayName}
+              className="rounded-circle border border-2 border-primary-subtle shadow-sm"
+              style={{ width: 48, height: 48, objectFit: 'cover' }}
+              referrerPolicy="no-referrer"
+            />
+          </div>
+        ) : (
+          <span className="sidebar-brand-icon-wrap" aria-hidden="true">
+            <i className="bi bi-mortarboard-fill"></i>
+          </span>
+        )}
         <h3 className="gradient-text mb-1">QuizMaster</h3>
         <small className="text-muted">{roleLabel}</small>
         <div className="small text-white mt-2" title={displayName}>

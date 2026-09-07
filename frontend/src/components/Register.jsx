@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
+import GoogleAuthButton from './GoogleAuthButton';
 import ThemeSwitcher from './ThemeSwitcher';
 import '../bootstrap-theme.css';
 
@@ -255,6 +256,25 @@ const Register = () => {
                   </>
                 ) : 'Register'}
               </button>
+
+              <div className="d-flex align-items-center my-3 text-muted">
+                <hr className="flex-grow-1 my-0 border-secondary-subtle" />
+                <span className="px-2 small text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}>or sign up with</span>
+                <hr className="flex-grow-1 my-0 border-secondary-subtle" />
+              </div>
+
+              <GoogleAuthButton
+                role={formData.role}
+                buttonText="signup_with"
+                onSuccess={(result) => {
+                  if (result?.user?.role === 'teacher') {
+                    navigate('/teacher/dashboard');
+                  } else {
+                    navigate('/student/quizzes');
+                  }
+                }}
+                onError={(err) => setMessage(err.message || 'Failed to sign up with Google')}
+              />
             </form>
           ) : (
             <form onSubmit={handleOtpVerification} className="auth-form-grid">

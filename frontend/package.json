@@ -4,10 +4,11 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:frontend": "vite",
+    "dev": "vite --configLoader native",
+    "dev:frontend": "vite --configLoader native",
     "dev:backend": "npm --prefix ../backend/server run dev",
     "build": "vite build",
+    "build:watch": "vite build --watch",
     "preview": "vite preview",
     "start:frontend": "vite preview",
     "start:backend": "npm --prefix ../backend/server run start"

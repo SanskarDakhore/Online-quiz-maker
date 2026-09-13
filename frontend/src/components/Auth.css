@@ -1,237 +1,1263 @@
-.auth-container {
+/* ==========================================================================
+   TRANSPARENT LIQUID GLASS & WATER DROPLET DESIGN SYSTEM
+   QuizMaster Authentication Suite (Login, Register, OTP)
+   ========================================================================== */
+
+/* --- Ambient Canvas & Fluid Floating Orbs --- */
+.auth-ambient-canvas {
+  position: relative;
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-}
-
-.auth-card {
-  max-width: 450px;
   width: 100%;
-}
-
-/* Tab Navigation */
-.tab-navigation {
   display: flex;
-  margin-bottom: 2rem;
-  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
   overflow: hidden;
-  border: 1px solid var(--glass-border);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(13, 23, 40, 0.55) 0%, rgba(4, 8, 16, 0.96) 100%),
+    var(--bg-primary, #070d18);
+  isolation: isolate;
 }
 
-.tab-btn {
+/* Daybreak light theme override */
+body[data-theme='daybreak'] .auth-ambient-canvas {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(240, 246, 255, 0.7) 0%, rgba(220, 232, 246, 0.95) 100%),
+    var(--bg-primary, #f2f6fb);
+}
+
+/* Background Micro-Mesh Grid */
+.auth-ambient-canvas::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 1.2px, transparent 1.2px);
+  background-size: 32px 32px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body[data-theme='daybreak'] .auth-ambient-canvas::before {
+  background-image: 
+    radial-gradient(circle at center, rgba(16, 34, 61, 0.12) 1.2px, transparent 1.2px);
+  opacity: 0.28;
+}
+
+/* Floating Fluid Liquid Orbs */
+.liquid-orb-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.liquid-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.78;
+  will-change: transform;
+}
+
+.liquid-orb-1 {
+  width: 440px;
+  height: 440px;
+  left: 6%;
+  top: 10%;
+  background: radial-gradient(circle, var(--primary, #2dbca4) 0%, rgba(45, 188, 164, 0.25) 60%, transparent 100%);
+  animation: floatOrb1 18s ease-in-out infinite alternate;
+}
+
+.liquid-orb-2 {
+  width: 500px;
+  height: 500px;
+  right: 5%;
+  bottom: 6%;
+  background: radial-gradient(circle, var(--secondary, #f59e0b) 0%, rgba(245, 158, 11, 0.28) 60%, transparent 100%);
+  animation: floatOrb2 22s ease-in-out infinite alternate;
+}
+
+.liquid-orb-3 {
+  width: 380px;
+  height: 380px;
+  left: 32%;
+  bottom: 12%;
+  background: radial-gradient(circle, #8b5cf6 0%, rgba(139, 92, 246, 0.24) 60%, transparent 100%);
+  animation: floatOrb3 20s ease-in-out infinite alternate;
+  opacity: 0.62;
+}
+
+.liquid-orb-4 {
+  width: 350px;
+  height: 350px;
+  right: 22%;
+  top: 6%;
+  background: radial-gradient(circle, #06b6d4 0%, rgba(6, 182, 212, 0.22) 60%, transparent 100%);
+  animation: floatOrb4 16s ease-in-out infinite alternate;
+  opacity: 0.58;
+}
+
+@keyframes floatOrb1 {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50% { transform: translate(70px, 50px) scale(1.15) rotate(45deg); }
+  100% { transform: translate(-45px, 80px) scale(0.9) rotate(90deg); }
+}
+
+@keyframes floatOrb2 {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50% { transform: translate(-80px, -60px) scale(1.18) rotate(-60deg); }
+  100% { transform: translate(50px, -40px) scale(0.92) rotate(-120deg); }
+}
+
+@keyframes floatOrb3 {
+  0% { transform: translate(0, 0) scale(0.95); }
+  50% { transform: translate(-60px, -70px) scale(1.22); }
+  100% { transform: translate(65px, -40px) scale(1.05); }
+}
+
+@keyframes floatOrb4 {
+  0% { transform: translate(0, 0) scale(1.05); }
+  50% { transform: translate(50px, 70px) scale(0.88); }
+  100% { transform: translate(-70px, 35px) scale(1.2); }
+}
+
+/* ==========================================================================
+   WATER DROPLETS - REALISTIC 3D LIQUID DEW DROPS
+   ========================================================================== */
+
+.water-drop {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px) saturate(220%);
+  -webkit-backdrop-filter: blur(4px) saturate(220%);
+  border-radius: 52% 48% 44% 56% / 58% 54% 46% 42%;
+  box-shadow:
+    inset 4px 4px 6px rgba(0, 0, 0, 0.2),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.65),
+    inset 0 0 4px rgba(255, 255, 255, 0.25),
+    5px 8px 16px rgba(0, 0, 0, 0.35);
+  z-index: 6;
+  animation: dropMorph 9s ease-in-out infinite alternate;
+}
+
+body[data-theme='daybreak'] .water-drop {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow:
+    inset 3px 3px 5px rgba(0, 0, 0, 0.1),
+    inset -3px -3px 5px rgba(255, 255, 255, 0.9),
+    4px 6px 12px rgba(50, 80, 120, 0.15);
+}
+
+/* Primary Specular Glare (Top-Left) */
+.water-drop::before {
+  content: '';
+  position: absolute;
+  top: 18%;
+  left: 20%;
+  width: 28%;
+  height: 28%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.4) 60%, transparent 100%);
+  filter: blur(0.4px);
+}
+
+/* Secondary Tiny Specular Glare (Bottom-Right) */
+.water-drop::after {
+  content: '';
+  position: absolute;
+  bottom: 22%;
+  right: 22%;
+  width: 14%;
+  height: 14%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  filter: blur(0.2px);
+}
+
+/* Droplet Morphing Animation */
+@keyframes dropMorph {
+  0% {
+    border-radius: 52% 48% 44% 56% / 58% 54% 46% 42%;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  35% {
+    border-radius: 44% 56% 58% 42% / 48% 42% 58% 52%;
+    transform: translate(3px, -4px) rotate(4deg);
+  }
+  70% {
+    border-radius: 60% 40% 46% 54% / 44% 62% 38% 56%;
+    transform: translate(-3px, 3px) rotate(-3deg);
+  }
+  100% {
+    border-radius: 48% 52% 60% 40% / 54% 46% 54% 46%;
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+/* Specific Droplet Sizes & Corner Placements */
+.drop-hero-1 {
+  width: 68px;
+  height: 64px;
+  top: -24px;
+  left: -20px;
+  animation-duration: 8s;
+  animation-delay: 0s;
+}
+
+.drop-hero-2 {
+  width: 48px;
+  height: 46px;
+  bottom: -16px;
+  right: -14px;
+  animation-duration: 11s;
+  animation-delay: -2s;
+}
+
+.drop-hero-3 {
+  width: 32px;
+  height: 30px;
+  top: 42%;
+  left: -14px;
+  animation-duration: 10s;
+  animation-delay: -4s;
+}
+
+.drop-hero-4 {
+  width: 26px;
+  height: 24px;
+  top: 18%;
+  right: -10px;
+  animation-duration: 7s;
+  animation-delay: -1s;
+}
+
+.drop-badge {
+  width: 20px;
+  height: 19px;
+  top: -6px;
+  right: -6px;
+  animation-duration: 6s;
+}
+
+/* Ambient Floating Drops in Space */
+.drop-ambient {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.65;
+  filter: blur(1.5px);
+  z-index: 1;
+}
+
+.drop-ambient-1 {
+  width: 52px;
+  height: 50px;
+  top: 22%;
+  left: 12%;
+  animation: floatOrb1 15s ease-in-out infinite alternate;
+}
+
+.drop-ambient-2 {
+  width: 42px;
+  height: 40px;
+  bottom: 25%;
+  right: 14%;
+  animation: floatOrb2 19s ease-in-out infinite alternate;
+}
+
+.drop-ambient-3 {
+  width: 36px;
+  height: 34px;
+  top: 65%;
+  left: 20%;
+  animation: floatOrb3 17s ease-in-out infinite alternate;
+}
+
+/* Concentric Water Ripple Effect */
+.water-ripple-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.water-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  opacity: 0;
+  animation: waterRippleExpand 9s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
+
+.water-ripple:nth-child(2) {
+  animation-delay: 3s;
+}
+
+.water-ripple:nth-child(3) {
+  animation-delay: 6s;
+}
+
+@keyframes waterRippleExpand {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.55;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+    border-color: rgba(255, 255, 255, 0);
+  }
+}
+
+/* ==========================================================================
+   TRANSPARENT LIQUID GLASS CARD CONTAINER & MENISCUS EDGES
+   ========================================================================== */
+
+.liquid-card-perspective {
+  perspective: 1400px;
+  width: 100%;
+  max-width: 500px;
+  z-index: 2;
+  position: relative;
+}
+
+.liquid-card-perspective.wide-mode {
+  max-width: 800px;
+}
+
+/* Hyper-Transparent Liquid Glass Card */
+.liquid-glass-card {
+  position: relative;
+  width: 100%;
+  border-radius: 32px;
+  /* Ultra-transparent glass layered gradient */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(255, 255, 255, 0.07) 100%
+  ), rgba(9, 18, 33, 0.42) !important;
+  backdrop-filter: blur(24px) saturate(220%) brightness(108%);
+  -webkit-backdrop-filter: blur(24px) saturate(220%) brightness(108%);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  /* Liquid meniscus light highlight inside the glass rim */
+  box-shadow:
+    inset 0 1.8px 2.5px 0 rgba(255, 255, 255, 0.52),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.3),
+    0 30px 70px -15px rgba(0, 0, 0, 0.72),
+    0 0 60px -10px var(--liquid-card-glow, rgba(45, 188, 164, 0.28));
+  padding: 2.5rem 2.4rem 2.2rem;
+  overflow: visible; /* Allows corner water droplets to hang over naturally */
+  transition: box-shadow 0.45s ease, border-color 0.45s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body[data-theme='daybreak'] .liquid-glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.6) 100%
+  ), rgba(230, 240, 252, 0.48) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    inset 0 1.8px 2.5px 0 rgba(255, 255, 255, 0.98),
+    0 26px 55px -10px rgba(50, 80, 120, 0.22),
+    0 0 45px -10px rgba(15, 118, 110, 0.24);
+}
+
+/* Liquid Glossy Glass Glare Overlay */
+.liquid-glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  border-radius: 32px 32px 100px 100px / 32px 32px 25px 25px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.03) 65%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+body[data-theme='daybreak'] .liquid-glass-card::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.1) 70%,
+    transparent 100%
+  );
+}
+
+/* Hover State - Increased Glass Refraction */
+.liquid-glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    inset 0 2px 3px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.25),
+    0 35px 80px -15px rgba(0, 0, 0, 0.8),
+    0 0 75px -10px var(--liquid-card-glow, rgba(45, 188, 164, 0.42));
+}
+
+/* ==========================================================================
+   CARD HEADER, BRANDING & THEME SELECTOR
+   ========================================================================== */
+
+.liquid-auth-header {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 1.8rem;
+}
+
+.liquid-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.liquid-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.42rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.liquid-brand-badge:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.liquid-brand-emblem {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary, #2dbca4), var(--secondary, #f59e0b));
+  color: #fff;
+  font-size: 0.9rem;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--primary, #2dbca4) 65%, transparent);
+}
+
+.liquid-brand-text {
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.liquid-header-titles h1,
+.liquid-header-titles h2 {
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.4rem;
+  background: linear-gradient(135deg, #ffffff 20%, var(--primary-light, #88f0e1) 75%, var(--secondary, #f59e0b) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+}
+
+body[data-theme='daybreak'] .liquid-header-titles h1,
+body[data-theme='daybreak'] .liquid-header-titles h2 {
+  background: linear-gradient(135deg, #092c4c 20%, #0f766e 70%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
+
+.liquid-header-subtitle {
+  color: var(--text-secondary, #b9c8df);
+  font-size: 0.94rem;
+  margin-bottom: 0;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   TRANSPARENT SEGMENTED ROLE SWITCHER (DROP-SHAPED SLIDER)
+   ========================================================================== */
+
+.liquid-segmented-track {
+  position: relative;
+  display: flex;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 999px;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 1.4rem;
+  z-index: 2;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme='daybreak'] .liquid-segmented-track {
+  background: rgba(220, 232, 248, 0.65);
+  border-color: rgba(60, 91, 124, 0.2);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.liquid-segmented-tab {
+  position: relative;
   flex: 1;
-  padding: 1rem;
-  background: var(--glass-bg);
   border: none;
-  color: var(--text-secondary);
-  font-weight: 600;
+  background: transparent;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-secondary, #b9c8df);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  z-index: 2;
+  transition: color 0.25s ease;
+}
+
+.liquid-segmented-tab:hover {
+  color: var(--text-primary);
+}
+
+.liquid-segmented-tab.active {
+  color: #ffffff;
+}
+
+/* The Sliding Liquid Pill Indicator */
+.liquid-active-pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  z-index: -1;
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.35),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.55),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
 }
 
-.tab-btn.active {
-  background: var(--primary);
-  color: white;
+.liquid-active-pill.pill-student {
+  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+  box-shadow:
+    0 6px 20px rgba(16, 185, 129, 0.48),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.6);
 }
 
-.tab-btn:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.1);
+.liquid-active-pill.pill-teacher {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow:
+    0 6px 20px rgba(245, 158, 11, 0.48),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.6);
 }
 
-.section-description {
-  text-align: center;
-  color: var(--text-secondary);
+.liquid-role-badge-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--text-muted, #7d92b2);
   margin-bottom: 1.5rem;
 }
 
-.auth-title {
-  font-size: 2rem;
-  font-weight: 700;
+.liquid-role-badge-tip i {
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   TRANSPARENT LIQUID INPUTS (WITH DROP MENISCUS & INSET REFLECTION)
+   ========================================================================== */
+
+.liquid-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  position: relative;
+  z-index: 2;
+}
+
+.liquid-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.liquid-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-secondary, #b9c8df);
+  letter-spacing: 0.01em;
+}
+
+.liquid-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.liquid-input-icon {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted, #7d92b2);
+  font-size: 1.1rem;
+  pointer-events: none;
+  transition: color 0.25s ease, transform 0.25s ease;
+  z-index: 3;
+}
+
+/* Transparent Liquid Input Box */
+.liquid-input {
+  width: 100%;
+  padding: 0.88rem 1.1rem 0.88rem 3rem;
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 16px;
+  color: var(--text-primary);
+  font-size: 0.96rem;
+  outline: none;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.25),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body[data-theme='daybreak'] .liquid-input {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border-color: rgba(60, 91, 124, 0.25) !important;
+  color: #10223d;
+  box-shadow:
+    inset 0 1px 4px rgba(0, 0, 0, 0.06),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.liquid-input::placeholder {
+  color: var(--text-muted, #7d92b2);
+  font-size: 0.88rem;
+}
+
+.liquid-input:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.2),
+    0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+body[data-theme='daybreak'] .liquid-input:hover {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(15, 118, 110, 0.45) !important;
+}
+
+.liquid-input:focus {
+  background: rgba(255, 255, 255, 0.09) !important;
+  border-color: var(--primary, #2dbca4) !important;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--primary, #2dbca4) 28%, transparent),
+    inset 0 2px 4px rgba(0, 0, 0, 0.25),
+    0 8px 24px -4px rgba(0, 0, 0, 0.4) !important;
+}
+
+.liquid-input:focus + .liquid-input-icon,
+.liquid-input-wrapper:focus-within .liquid-input-icon {
+  color: var(--primary, #2dbca4);
+  transform: translateY(-50%) scale(1.12);
+}
+
+.liquid-input.has-toggle {
+  padding-right: 3.2rem;
+}
+
+.liquid-input-toggle {
+  position: absolute;
+  right: 0.95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #7d92b2);
+  padding: 0.45rem;
+  cursor: pointer;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+  z-index: 3;
+}
+
+.liquid-input-toggle:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-50%) scale(1.08);
+}
+
+/* Error States */
+.liquid-input.is-invalid {
+  border-color: var(--danger, #ef4444) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger, #ef4444) 28%, transparent) !important;
+}
+
+.liquid-field-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--danger, #ef4444);
+  margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   ROLE SELECTION CARDS (REGISTER PAGE) - LIQUID WATER TILES
+   ========================================================================== */
+
+.liquid-role-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  margin-bottom: 0.6rem;
+}
+
+.liquid-role-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  padding: 1.2rem 0.9rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.3),
+    0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+body[data-theme='daybreak'] .liquid-role-card {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(60, 91, 124, 0.2);
+}
+
+.liquid-role-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.45),
+    0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.liquid-role-card.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary, #2dbca4);
+  box-shadow:
+    0 10px 28px -6px color-mix(in srgb, var(--primary, #2dbca4) 38%, transparent),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.5);
+}
+
+.liquid-role-card.active.role-teacher {
+  border-color: var(--secondary, #f59e0b);
+  box-shadow:
+    0 10px 28px -6px color-mix(in srgb, var(--secondary, #f59e0b) 38%, transparent),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.5);
+}
+
+.liquid-role-card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 0.65rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  transition: all 0.25s ease;
+}
+
+.liquid-role-card.active .liquid-role-card-icon {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 45%, transparent);
+}
+
+.liquid-role-card-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+
+.liquid-role-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted, #7d92b2);
+  line-height: 1.3;
+}
+
+/* ==========================================================================
+   LIQUID ACTION HERO BUTTON (WATER GLOSS PILL)
+   ========================================================================== */
+
+.btn-liquid-hero {
+  position: relative;
+  width: 100%;
+  padding: 0.95rem 1.4rem;
+  border-radius: 16px;
+  border: none;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow:
+    0 12px 28px -5px var(--hero-btn-glow, rgba(45, 188, 164, 0.45)),
+    inset 0 1.8px 2px rgba(255, 255, 255, 0.55),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.3);
+}
+
+.btn-liquid-student {
+  background: linear-gradient(135deg, #10b981 0%, #0d9488 60%, #047857 100%);
+  --hero-btn-glow: rgba(16, 185, 129, 0.5);
+}
+
+.btn-liquid-teacher {
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 60%, #c2410c 100%);
+  --hero-btn-glow: rgba(245, 158, 11, 0.5);
+}
+
+.btn-liquid-neutral {
+  background: linear-gradient(135deg, var(--primary, #2dbca4) 0%, #6366f1 100%);
+  --hero-btn-glow: rgba(45, 188, 164, 0.5);
+}
+
+.btn-liquid-hero:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow:
+    0 18px 36px -6px var(--hero-btn-glow),
+    inset 0 2px 3px rgba(255, 255, 255, 0.7);
+}
+
+.btn-liquid-hero:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+}
+
+.btn-liquid-hero:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Liquid Light Wave passing across button */
+.btn-liquid-hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 80%
+  );
+  transform: skewX(-20deg);
+  transition: transform 0.75s ease;
+  pointer-events: none;
+}
+
+.btn-liquid-hero:hover::after {
+  transform: translateX(250%) skewX(-20deg);
+}
+
+/* ==========================================================================
+   GLASS DIVIDER & GOOGLE OAUTH
+   ========================================================================== */
+
+.liquid-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.4rem 0;
+}
+
+.liquid-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+}
+
+body[data-theme='daybreak'] .liquid-divider-line {
+  background: linear-gradient(90deg, transparent, rgba(60, 91, 124, 0.28), transparent);
+}
+
+.liquid-divider-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted, #7d92b2);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+body[data-theme='daybreak'] .liquid-divider-badge {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(60, 91, 124, 0.18);
+}
+
+.liquid-google-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.25s ease;
+}
+
+.liquid-google-wrapper:hover {
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   CARD FOOTER & NAVIGATION LINKS
+   ========================================================================== */
+
+.liquid-card-footer {
+  margin-top: 1.8rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  z-index: 2;
+  position: relative;
+}
+
+body[data-theme='daybreak'] .liquid-card-footer {
+  border-top-color: rgba(60, 91, 124, 0.16);
+}
+
+.liquid-footer-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--text-secondary, #b9c8df);
+  padding: 0.48rem 1rem;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  transition: all 0.22s ease;
+}
+
+.liquid-footer-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.liquid-footer-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary, #b9c8df);
+  margin-bottom: 0;
+}
+
+.liquid-footer-link {
+  color: var(--primary, #2dbca4);
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.liquid-footer-link:hover {
+  color: var(--primary-light, #88f0e1);
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   ALERTS & NOTIFICATIONS
+   ========================================================================== */
+
+.liquid-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.9rem 1.15rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  margin-bottom: 1.3rem;
+  backdrop-filter: blur(14px);
+  border: 1px solid;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  animation: liquidAlertSlide 0.35s ease;
+}
+
+@keyframes liquidAlertSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.liquid-alert-danger {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.38);
+  color: #fca5a5;
+}
+
+body[data-theme='daybreak'] .liquid-alert-danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.liquid-alert-success {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.38);
+  color: #6ee7b7;
+}
+
+body[data-theme='daybreak'] .liquid-alert-success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #15803d;
+}
+
+/* ==========================================================================
+   INTRO / FEATURE OVERLAY DRAWER
+   ========================================================================== */
+
+.liquid-intro-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem 0.5rem;
+}
+
+.liquid-intro-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.38rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(45, 188, 164, 0.15);
+  border: 1px solid rgba(45, 188, 164, 0.35);
+  color: var(--primary, #2dbca4);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 1.1rem;
+}
+
+.liquid-intro-title {
+  font-size: 2.3rem;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff 30%, var(--primary-light, #88f0e1) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.auth-subtitle {
-  text-align: center;
-  color: var(--text-secondary);
-  margin-bottom: 2rem;
+body[data-theme='daybreak'] .liquid-intro-title {
+  background: linear-gradient(135deg, #0f172a 30%, #0f766e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.btn-full {
+.liquid-intro-desc {
+  color: var(--text-secondary, #b9c8df);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  max-width: 440px;
+  margin: 0 auto 1.9rem;
+}
+
+.liquid-intro-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
   width: 100%;
+  max-width: 450px;
+  margin-bottom: 2.2rem;
+  text-align: left;
 }
 
-.btn-google {
-  background: white;
-  color: #333;
-  border: 2px solid var(--glass-border);
-}
-
-.btn-google:hover {
-  background: #f5f5f5;
-  transform: translateY(-2px);
-}
-
-.btn-google img {
-  width: 20px;
-  height: 20px;
-}
-
-.divider {
+.liquid-feature-item {
   display: flex;
   align-items: center;
-  margin: 1.5rem 0;
-  color: var(--text-muted);
+  gap: 0.9rem;
+  padding: 0.8rem 1.1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
 }
 
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--glass-border);
-}
-
-.divider span {
-  margin: 0 1rem;
-  font-size: 0.875rem;
-}
-
-.auth-footer {
-  text-align: center;
-  margin-top: 1.5rem;
-  color: var(--text-secondary);
-}
-
-.auth-footer a {
-  color: var(--primary);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.auth-footer a:hover {
-  text-decoration: underline;
-}
-
-/* Enhanced Button Styles */
-.btn {
-  padding: 0.875rem 1.5rem;
+.liquid-feature-icon {
+  width: 38px;
+  height: 38px;
   border-radius: 12px;
-  font-weight: 600;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+  color: var(--primary);
+  font-size: 1.15rem;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
-.btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary), #7c3aed);
-  border: none;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(13, 148, 136, 0.4);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--glass-border);
+.liquid-feature-text strong {
+  display: block;
+  font-size: 0.94rem;
   color: var(--text-primary);
 }
 
-.btn-secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+.liquid-feature-text span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
-.btn-success {
-  background: linear-gradient(135deg, var(--success), #059669);
-  border: none;
-  color: white;
-}
+/* ==========================================================================
+   OTP VERIFICATION MODE
+   ========================================================================== */
 
-.btn-success:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
-}
-
-.btn-info {
-  background: linear-gradient(135deg, var(--info), #1d4ed8);
-  border: none;
-  color: white;
-}
-
-.btn-info:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4);
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, var(--danger), #dc2626);
-  border: none;
-  color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(239, 68, 68, 0.4);
-}
-
-.message {
-  padding: 1rem;
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
+.liquid-otp-header {
   text-align: center;
-  font-weight: 500;
+  margin-bottom: 1.8rem;
 }
 
-.message.success {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--success);
-  border: 1px solid var(--success);
+.liquid-otp-emblem {
+  width: 68px;
+  height: 68px;
+  border-radius: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary, #2dbca4), #6366f1);
+  color: #fff;
+  font-size: 1.9rem;
+  box-shadow:
+    0 12px 32px -4px color-mix(in srgb, var(--primary, #2dbca4) 55%, transparent),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.6);
+  margin-bottom: 1.25rem;
 }
 
-.message.error {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--danger);
-  border: 1px solid var(--danger);
+.liquid-otp-input {
+  letter-spacing: 0.65em;
+  font-size: 1.7rem;
+  font-weight: 700;
+  text-align: center;
+  font-family: 'Fira Code', monospace;
+  padding: 0.85rem 1rem !important;
 }
 
-@media (max-width: 768px) {
-  .auth-card {
-    max-width: 100%;
+/* ==========================================================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================================================== */
+
+@media (max-width: 576px) {
+  .liquid-glass-card {
+    padding: 2rem 1.4rem 1.8rem;
+    border-radius: 26px;
   }
-  
-  .auth-title {
+
+  .liquid-header-titles h1,
+  .liquid-header-titles h2 {
     font-size: 1.75rem;
+  }
+
+  .liquid-role-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .drop-hero-1 {
+    width: 48px;
+    height: 46px;
+    top: -16px;
+    left: -12px;
+  }
+
+  .drop-hero-2 {
+    width: 36px;
+    height: 34px;
+    bottom: -10px;
+    right: -8px;
+  }
+
+  .water-ripple-container {
+    width: 380px;
+    height: 380px;
   }
 }

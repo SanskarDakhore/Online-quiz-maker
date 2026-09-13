@@ -187,27 +187,7 @@ code {
 .auth-shell::before,
 .auth-shell::after {
   content: '';
-  position: fixed;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 999px;
-  filter: blur(70px);
-}
-
-.auth-shell::before {
-  width: 280px;
-  height: 280px;
-  left: 8%;
-  top: 10%;
-  background: color-mix(in srgb, var(--primary) 55%, transparent);
-}
-
-.auth-shell::after {
-  width: 340px;
-  height: 340px;
-  right: 4%;
-  bottom: 8%;
-  background: color-mix(in srgb, var(--secondary) 48%, transparent);
+  display: none;
 }
 
 .auth-grid {

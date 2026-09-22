@@ -178,19 +178,8 @@ const Register = () => {
         <div className="liquid-orb liquid-orb-4" />
       </div>
 
-      {/* Ambient Floating Dew Droplets */}
-      <div className="water-drop drop-ambient drop-ambient-1" />
-      <div className="water-drop drop-ambient drop-ambient-2" />
-      <div className="water-drop drop-ambient drop-ambient-3" />
-
       {/* 3D Perspective Card Container */}
       <div className="liquid-card-perspective">
-        {/* Realistic 3D Water Droplets on Card Edges */}
-        <div className="water-drop drop-hero-1" />
-        <div className="water-drop drop-hero-2" />
-        <div className="water-drop drop-hero-3" />
-        <div className="water-drop drop-hero-4" />
-
         <motion.div
           className="liquid-glass-card"
           style={{ '--liquid-card-glow': activeRoleColor }}
@@ -206,7 +195,6 @@ const Register = () => {
                 <i className="bi bi-mortarboard-fill"></i>
               </span>
               <span className="liquid-brand-text">QuizMaster</span>
-              <span className="water-drop drop-badge" />
             </Link>
             <ThemeSwitcher single />
           </div>

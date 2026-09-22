@@ -129,6 +129,7 @@ body[data-theme='daybreak'] .auth-ambient-canvas::before {
    ========================================================================== */
 
 .water-drop {
+  display: none !important;
   position: absolute;
   pointer-events: none;
   background: rgba(255, 255, 255, 0.05);

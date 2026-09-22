@@ -3,6 +3,10 @@ import { useAuth } from '../contexts/AuthContext';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
+// Global singleton to guarantee google.accounts.id.initialize is called exactly once
+let isGlobalGsiInitialized = false;
+let activeGoogleAuthCallback = null;
+
 const GoogleAuthButton = ({
   role = 'student',
   buttonText = 'continue_with', // 'signin_with' | 'signup_with' | 'continue_with'
@@ -18,9 +22,6 @@ const GoogleAuthButton = ({
   const isConfigured = Boolean(
     GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.includes('your_google_client_id_here')
   );
-
-  const handleResponseRef = useRef(null);
-  const initializedRef = useRef(false);
 
   const handleGoogleResponse = async (response) => {
     if (!response?.credential) {
@@ -47,7 +48,10 @@ const GoogleAuthButton = ({
     }
   };
 
-  handleResponseRef.current = handleGoogleResponse;
+  // Keep active callback pointed to the latest component instance and role
+  useEffect(() => {
+    activeGoogleAuthCallback = handleGoogleResponse;
+  });
 
   useEffect(() => {
     if (!isConfigured) return;
@@ -57,14 +61,14 @@ const GoogleAuthButton = ({
     const renderGoogleButton = () => {
       if (window.google?.accounts?.id && containerRef.current) {
         try {
-          if (!initializedRef.current) {
+          if (!isGlobalGsiInitialized) {
             window.google.accounts.id.initialize({
               client_id: GOOGLE_CLIENT_ID,
-              callback: (res) => handleResponseRef.current?.(res),
+              callback: (res) => activeGoogleAuthCallback?.(res),
               cancel_on_tap_outside: true,
               auto_select: false
             });
-            initializedRef.current = true;
+            isGlobalGsiInitialized = true;
           }
 
           containerRef.current.innerHTML = '';
@@ -80,7 +84,7 @@ const GoogleAuthButton = ({
 
           if (checkInterval) clearInterval(checkInterval);
         } catch (err) {
-          console.error('Failed to initialize Google Sign-In:', err);
+          console.error('Failed to render Google Sign-In button:', err);
         }
       }
     };

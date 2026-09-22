@@ -19,49 +19,8 @@ const GoogleAuthButton = ({
     GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.includes('your_google_client_id_here')
   );
 
-  useEffect(() => {
-    if (!isConfigured) return;
-
-    let checkInterval = null;
-
-    const initializeGoogleButton = () => {
-      if (window.google?.accounts?.id && containerRef.current) {
-        try {
-          window.google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleGoogleResponse,
-            cancel_on_tap_outside: true,
-            auto_select: false
-          });
-
-          containerRef.current.innerHTML = '';
-          window.google.accounts.id.renderButton(containerRef.current, {
-            type: 'standard',
-            theme: 'outline',
-            size: 'large',
-            text: buttonText,
-            shape: 'pill',
-            logo_alignment: 'left',
-            width: 320
-          });
-
-          if (checkInterval) clearInterval(checkInterval);
-        } catch (err) {
-          console.error('Failed to initialize Google Sign-In:', err);
-        }
-      }
-    };
-
-    if (window.google?.accounts?.id) {
-      initializeGoogleButton();
-    } else {
-      checkInterval = setInterval(initializeGoogleButton, 300);
-    }
-
-    return () => {
-      if (checkInterval) clearInterval(checkInterval);
-    };
-  }, [role, buttonText, isConfigured]);
+  const handleResponseRef = useRef(null);
+  const initializedRef = useRef(false);
 
   const handleGoogleResponse = async (response) => {
     if (!response?.credential) {
@@ -87,6 +46,55 @@ const GoogleAuthButton = ({
       setLoading(false);
     }
   };
+
+  handleResponseRef.current = handleGoogleResponse;
+
+  useEffect(() => {
+    if (!isConfigured) return;
+
+    let checkInterval = null;
+
+    const renderGoogleButton = () => {
+      if (window.google?.accounts?.id && containerRef.current) {
+        try {
+          if (!initializedRef.current) {
+            window.google.accounts.id.initialize({
+              client_id: GOOGLE_CLIENT_ID,
+              callback: (res) => handleResponseRef.current?.(res),
+              cancel_on_tap_outside: true,
+              auto_select: false
+            });
+            initializedRef.current = true;
+          }
+
+          containerRef.current.innerHTML = '';
+          window.google.accounts.id.renderButton(containerRef.current, {
+            type: 'standard',
+            theme: 'outline',
+            size: 'large',
+            text: buttonText,
+            shape: 'pill',
+            logo_alignment: 'left',
+            width: 320
+          });
+
+          if (checkInterval) clearInterval(checkInterval);
+        } catch (err) {
+          console.error('Failed to initialize Google Sign-In:', err);
+        }
+      }
+    };
+
+    if (window.google?.accounts?.id) {
+      renderGoogleButton();
+    } else {
+      checkInterval = setInterval(renderGoogleButton, 300);
+    }
+
+    return () => {
+      if (checkInterval) clearInterval(checkInterval);
+    };
+  }, [buttonText, isConfigured]);
 
   if (!isConfigured) {
     return (

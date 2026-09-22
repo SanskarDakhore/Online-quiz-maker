@@ -4,9 +4,7 @@ const normalizeApiBase = (raw) => {
   return /\/api$/i.test(trimmed) ? trimmed : `${trimmed}/api`;
 };
 
-const defaultBaseUrl = import.meta.env.PROD
-  ? 'https://online-quiz-maker-qncd.onrender.com/api'
-  : 'http://localhost:5000/api';
+const defaultBaseUrl = 'https://online-quiz-maker-qncd.onrender.com/api';
 
 const ENV_API_BASE_URL = normalizeApiBase(import.meta.env.VITE_API_BASE_URL || defaultBaseUrl);
 
